@@ -1,0 +1,21 @@
+Meeting on 29 July 2022
+
+Questions on Daniel's block diagram
+-----------------------------------
+Currently how do they adjust the LN valve? Manual by hand. It's a prototype.
+How about the manual control of the release valve? Aga, how they know pressure is too high?
+What type of temp probe? Output format? Display. Currently they can get it to -20 deg.
+Currently what is the cost of LN Hashtag used (manual control)? No estimate but definitely cheaper.
+ICDG - Innovation C? Development Grant
+
+2 deliverables:
+1) door
+2) control system
+
+Terminalogies
+-------------
+Dewar - A dewar container—sometimes called a dewar flask or dewar—is a vessel with a vacuum space between a cold liquid and the outside walls of the vessel. A cryogenic storage dewar is a specialised type of vacuum flask used for storing cryogens, whose boiling points are much lower than room temperature. Cryogenic storage dewars may take several different forms including open buckets, flasks with loose-fitting stoppers and self-pressurising tanks. (Wikipedia)
+
+Ref
+---
+LN2 LIQUID NITROGEN COOLING SYSTEMS (http://www.instec.com/portal/article/index/id/48/cid/40.html)

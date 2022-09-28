@@ -1,0 +1,55 @@
+
+Sunlight
+
+Gravity: Waterproof DS18B20 Sensor Kit ($11.90 x 5)?
+http://sun-light.com.sg/index.php?route=product/product&product_id=4291&search=ds18b20
+
+4-Channel 5V Relay Module for PIC ARM AVR DSP Arduino MSP430 TTL Logic ($18.5
+x 2)
+http://sun-light.com.sg/index.php?route=product/product&product_id=1141&search=relay
+
+5V MAX485 TTL To RS485 Converter Module Board ($7 x 10)
+http://sun-light.com.sg/index.php?route=product/product&product_id=4353&search=max485
+
+Bluetooth Module HM-11 ($17.2 x 5)
+http://sun-light.com.sg/index.php?route=product/product&product_id=2341&search=bluetooth+module
+
+Adjustable DC/DC Power Converter (1.25V - 35V/3A) ($7.5 x 5)
+http://sun-light.com.sg/index.php?route=product/product&product_id=2015&search=dc+dc+converter
+
+AC to DC Converter 24V 3A ($15 x 2)
+http://sun-light.com.sg/index.php?route=product/product&product_id=4389&search=dc+dc+converter
+
+AC to DC Converter 12V 3A ($12 x 2)
+http://sun-light.com.sg/index.php?route=product/product&product_id=4388&search=dc+dc+converter
+
+
+
+element14
+
+4D system programming cable ($41.76 x 1)
+https://sg.element14.com/EQuoteDetailSearch?catalogId=15001&CMP=e-email-sys-quoteready-GLB&storeId=10191&langId=65&krypto=PXYThq7WT%2FDFm6fWEf8grFm0cRJKZUm6WRfH67kgx9gee1hEI%2Fuq5AgdRjfJtgTrskabYo3n1mHzwP4dQCneLH8l6JEiUNfBZSU9pQ6tSjS8egRK57CcXavbDA5Y87iy8NqzfqafXHpfdlrqu2%2F%2F8bHUdYRoW%2B0BrxyjKxbTHldKeoqQ%2BZ6LQRkb5U9pCNu2nn6bnJ7%2FdVSUt%2F%2BKJ61JVZI4JGhUs3MfagFevM6ZqBnR1RCczckTYqIe12BRtPdkAzc5XkPIMfCT0ScnZ7LPtf6Osw4Ws8t8kRat6c%2BCLGfzi0O9ADtAr3GInB%2BY3XJjRhRoR6h7WMSsCjAu8qBmuYFNGHW%2BFFr5auslvoJ%2FeiY%3D
+
+DFR0229 Expansion Board, Micro SD(TF) Module ($7.23 x 5)
+https://sg.element14.com/dfrobot/dfr0229/micro-sd-module-arduino-uno-mega/dp/3769941?st=dfr0229
+
+TEL0148 Serial Data Logger Board, 3.3 V to 5 V, Arduino UNO R3 Board ($5.43 x 4)
+https://sg.element14.com/dfrobot/tel0148/serial-data-logger-board-3-3v/dp/3974155
+
+DFR0464 Expansion Board, Gravity I2C 16x2 Arduino LCD, DFRduino UNO R3 Board ($16.55 x 2)
+https://sg.element14.com/dfrobot/dfr0464/gravity-i2c-16x2-arduino-lcd/dp/3769912?st=gravity%20lcd
+
+101990644 Sensor Board, AHT20, Temperature & Humidity Sensor, Arduino Board ($8.84 x 5)
+https://sg.element14.com/seeed-studio/101990644/sensor-board-arduino-board/dp/3932122
+
+DFR0831 Buck Converter Module, 7 V to 24 Vin, 5 Vout, Arduino UNO Board ($6.82 x 4)
+https://sg.element14.com/dfrobot/dfr0831/buck-conv-module-7v-to-24vin-5vout/dp/3974104
+
+DFR0060 Expansion Board, 2x Screw Shield, Arduino Development Board ($10.43 x 2)
+https://sg.element14.com/dfrobot/dfr0060/screw-shield-arduino-dev-board/dp/3769974
+
+DFR0009 LCD Keypad Shield, Gravity 1602, 2 x 16 LCD Display, Arduino
+Development Boards ($13.77 x 2)
+https://sg.element14.com/dfrobot/dfr0009/gravity-1602-lcd-keypad-shield/dp/3517870
+
+
