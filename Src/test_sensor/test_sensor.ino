@@ -8,6 +8,8 @@
  *           Uno pin 4 - Max485 DE
  *           Uno pin 10 - Max485 RO
  *           Uno pin 11 - Max485 DI
+ *           Max485 Vcc - +5V
+ *           Max485 Gnd - Ground
  *           Max485 A - RK330-02 A (yellow)
  *           Max485 B - RK330-02 B (green)
  *           +12v and ground connected to Uno and RK330-02 via a splitter
@@ -22,10 +24,15 @@
 
 #include <ModbusRtu.h>
 #include <SoftwareSerial.h>
+#include "DFRobot_RGBLCD1602.h"
+
+//16 characters and 2 lines of show
+DFRobot_RGBLCD1602 lcd(/*lcdCols*/16,/*lcdRows*/2);
 
 // data array for modbus network sharing
 uint16_t au16data[16];
 uint8_t u8state;
+float t, h, p;
 
 //Create a SoftwareSerial object so that we can use software serial. Search "software serial" on Arduino.cc to find out more details.
 SoftwareSerial mySerial(10, 11);
@@ -47,12 +54,18 @@ modbus_t telegram;
 unsigned long u32wait;
 
 void setup() {
+  lcd.init();
+  lcd.clear();
+  lcd.setCursor(0,0); lcd.print("Temp");
+  lcd.setCursor(6,0); lcd.print("Humid");
+  lcd.setCursor(12,0); lcd.print("Pres");
   Serial.begin(9600); // start terminal via usb
   mySerial.begin(9600); // start software serial
   master.start(); // start the ModBus object
   master.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
   u32wait = millis() + 1000;
-  u8state = 0; 
+  u8state = 0;
+  t = 0.0; h = 0.0; p = 0.0;
 }
 
 void loop() {
@@ -82,10 +95,15 @@ void loop() {
     if (master.getState() == COM_IDLE) {
       u8state = 0;
       u32wait = millis() + 2000;
-        Serial.print("Temp = "); Serial.print(au16data[0]/10.0);
-        Serial.print(" degC, Humid = "); Serial.print(au16data[1]/10.0);
-        Serial.print(" %RH, Press = "); Serial.print(au16data[2]/10.0);
-        Serial.println(" kPa");
+        t = au16data[0]/10.0;
+        h = au16data[1]/10.0;
+        p = au16data[2]/10.0;
+        Serial.print("Temperature = "); Serial.print(t);
+        Serial.print(" degC, Humidity = "); Serial.print(h);
+        Serial.print(" %RH, Pressure = "); Serial.print(p); Serial.println(" kPa");
+        lcd.setCursor(0,1); lcd.print(t);
+        lcd.setCursor(6,1); lcd.print(h);
+        lcd.setCursor(12,1); lcd.print(p);
     }
     break;
   }
