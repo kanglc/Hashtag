@@ -1,0 +1,7 @@
+DFRobot Wiki:
+https://wiki.dfrobot.com/Gravity__I2C_16x2_Arduino_LCD_with_RGB_Backlight_Display_SKU__DFR0464
+
+Arduino library:
+https://github.com/DFRobot/DFRobot_RGBLCD1602
+
+
