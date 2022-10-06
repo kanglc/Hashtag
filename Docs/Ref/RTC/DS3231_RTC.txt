@@ -6,3 +6,4 @@ https://github.com/rodan/ds3231
 
 I2C Address = 0x68
 
+https://electropeak.com/learn/interfacing-ds1302-real-time-clock-rtc-module-with-arduino/
