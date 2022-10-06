@@ -13,6 +13,7 @@
  *           Max485 A - RK330-02 A (yellow)
  *           Max485 B - RK330-02 B (green)
  *           +12v and ground connected to Uno and RK330-02 via a splitter
+ *           DFR0464 LCD RGB Backlight Module
  *
  * Software: Modbus-Master-Slave-for-Arduino-master library (by smarmengol/Helium6072)
  *           Modbus master example 2:
@@ -35,7 +36,7 @@ uint8_t u8state;
 float t, h, p;
 
 //Create a SoftwareSerial object so that we can use software serial. Search "software serial" on Arduino.cc to find out more details.
-SoftwareSerial mySerial(10, 11);
+SoftwareSerial mySerial(9, 10);
 
 /**
  *  Modbus object declaration
@@ -44,7 +45,7 @@ SoftwareSerial mySerial(10, 11);
  *  u8txenpin : 0 for RS-232 and USB-FTDI 
  *               or any pin number > 1 for RS-485
  */
-Modbus master(0, mySerial, 4); // this is master and RS-485 via software serial
+Modbus master(0, mySerial, 2); // this is master and RS-485 via software serial
 
 /**
  * This structure contains a query to an slave device
@@ -59,7 +60,7 @@ void setup() {
   lcd.setCursor(0,0); lcd.print("Temp");
   lcd.setCursor(6,0); lcd.print("Humid");
   lcd.setCursor(12,0); lcd.print("Pres");
-  Serial.begin(9600); // start terminal via usb
+  //Serial.begin(9600); // start terminal via usb
   mySerial.begin(9600); // start software serial
   master.start(); // start the ModBus object
   master.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
@@ -98,9 +99,9 @@ void loop() {
         t = au16data[0]/10.0;
         h = au16data[1]/10.0;
         p = au16data[2]/10.0;
-        Serial.print("Temperature = "); Serial.print(t);
-        Serial.print(" degC, Humidity = "); Serial.print(h);
-        Serial.print(" %RH, Pressure = "); Serial.print(p); Serial.println(" kPa");
+        //Serial.print("Temperature = "); Serial.print(t);
+        //Serial.print(" degC, Humidity = "); Serial.print(h);
+        //Serial.print(" %RH, Pressure = "); Serial.print(p); Serial.println(" kPa");
         lcd.setCursor(0,1); lcd.print(t);
         lcd.setCursor(6,1); lcd.print(h);
         lcd.setCursor(12,1); lcd.print(p);

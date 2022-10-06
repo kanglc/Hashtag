@@ -1,0 +1,8 @@
+https://create.arduino.cc/projecthub/MisterBotBreak/how-to-use-a-real-time-clock-module-ds3231-bc90fe
+
+http://gilles.thebault.free.fr/spip.php?article53
+
+https://github.com/rodan/ds3231
+
+I2C Address = 0x68
+

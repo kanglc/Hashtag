@@ -4,4 +4,4 @@ https://wiki.dfrobot.com/Gravity__I2C_16x2_Arduino_LCD_with_RGB_Backlight_Displa
 Arduino library:
 https://github.com/DFRobot/DFRobot_RGBLCD1602
 
-
+I2C Address = 0x7C
