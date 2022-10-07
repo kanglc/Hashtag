@@ -34,6 +34,7 @@ DFRobot_RGBLCD1602 lcd(/*lcdCols*/16,/*lcdRows*/2);
 uint16_t au16data[16];
 uint8_t u8state;
 float t, h, p;
+const int DE_RE = 8;
 
 //Create a SoftwareSerial object so that we can use software serial. Search "software serial" on Arduino.cc to find out more details.
 SoftwareSerial mySerial(9, 10);
@@ -45,7 +46,7 @@ SoftwareSerial mySerial(9, 10);
  *  u8txenpin : 0 for RS-232 and USB-FTDI 
  *               or any pin number > 1 for RS-485
  */
-Modbus master(0, mySerial, 2); // this is master and RS-485 via software serial
+Modbus master(0, mySerial, DE_RE); // this is master and RS-485 via software serial
 
 /**
  * This structure contains a query to an slave device

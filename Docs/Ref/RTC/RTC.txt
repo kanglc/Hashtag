@@ -1,3 +1,13 @@
+DS1302
+======
+
+This is the one use:
+
+https://electropeak.com/learn/interfacing-ds1302-real-time-clock-rtc-module-with-arduino/
+
+
+DS3231
+======
 https://create.arduino.cc/projecthub/MisterBotBreak/how-to-use-a-real-time-clock-module-ds3231-bc90fe
 
 http://gilles.thebault.free.fr/spip.php?article53
@@ -6,4 +16,3 @@ https://github.com/rodan/ds3231
 
 I2C Address = 0x68
 
-https://electropeak.com/learn/interfacing-ds1302-real-time-clock-rtc-module-with-arduino/
