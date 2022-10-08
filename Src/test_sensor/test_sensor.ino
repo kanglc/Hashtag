@@ -1,38 +1,63 @@
 /**
  * For testing the temperature, humidity, and pressure sensor provided by Hastag
- * By Kang Liat Chuan, 1 Sep 2022
+ * By Kang Liat Chuan.
  * 
- * Hardware: Arduino Uno, Max485-to-TTL module, RK330-02 sensor (from Hashtag)
- *           PC running Arduino IDE - USB - Arduino Uno - Max485 - RK330-02
- *           Uno pin 4 - Max485 RE
- *           Uno pin 4 - Max485 DE
- *           Uno pin 10 - Max485 RO
- *           Uno pin 11 - Max485 DI
- *           Max485 Vcc - +5V
- *           Max485 Gnd - Ground
- *           Max485 A - RK330-02 A (yellow)
- *           Max485 B - RK330-02 B (green)
- *           +12v and ground connected to Uno and RK330-02 via a splitter
- *           DFR0464 LCD RGB Backlight Module
+ * Log:
+ * RK330 temperature/humidity/pressure sensor working 1 Sep 2022
+ * DFR0464 LCD RGB Backlight Module working 30 Sep 2022
+ * DS1302 RTC Module working 7 Oct 2022
+ * 
+ * Hardware:
+ * Arduino Uno, Max485-to-TTL module, RK330-02 sensor (from Hashtag)
+ * PC running Arduino IDE - USB - Arduino Uno - Max485 - RK330-02
+ * Uno pin 4 - Max485 RE
+ * Uno pin 4 - Max485 DE
+ * Uno pin 10 - Max485 RO
+ * Uno pin 11 - Max485 DI
+ * Max485 Vcc - +5V
+ * Max485 Gnd - Ground
+ * Max485 A - RK330-02 A (yellow)
+ * Max485 B - RK330-02 B (green)
+ * +12v and ground connected to Uno and RK330-02 via a splitter
+ * DFR0464 LCD RGB Backlight Module
+ * DS1302 RTC Module
  *
- * Software: Modbus-Master-Slave-for-Arduino-master library (by smarmengol/Helium6072)
- *           Modbus master example 2:
- *           The purpose of this example is to query an array of data
- *           from an external Modbus slave device.
- *           This example is similar to "simple_master", but this example
- *           allows you to use software serial instead of hardware serial
+ * Software:
+ * Modbus-Master-Slave-for-Arduino-master library (by smarmengol/Helium6072)
+ * Modbus master example 2:
+ * The purpose of this example is to query an array of data
+ * from an external Modbus slave device.
+ * This example is similar to "simple_master", but this example
+ * allows you to use software serial instead of hardware serial
  */
 
+// Definitions
+#define countof(a) (sizeof(a) / sizeof(a[0]))
+
+// Libraries
 #include <ModbusRtu.h>
 #include <SoftwareSerial.h>
 #include "DFRobot_RGBLCD1602.h"
+#include <ThreeWire.h>  
+#include <RtcDS1302.h>
+
+// DS1302 CONNECTIONS:
+// DS1302 CLK/SCLK --> 5
+// DS1302 DAT/IO --> 7
+// DS1302 RST/CE --> 2
+// DS1302 VCC --> 3.3v - 5v
+// DS1302 GND --> GND
+ThreeWire myWire(7,5,2); // IO, SCLK, CE
+RtcDS1302<ThreeWire> Rtc(myWire);
 
 //16 characters and 2 lines of show
 DFRobot_RGBLCD1602 lcd(/*lcdCols*/16,/*lcdRows*/2);
 
+// Constants
 // data array for modbus network sharing
 uint16_t au16data[16];
 uint8_t u8state;
+unsigned long u32wait;
 float t, h, p;
 const int DE_RE = 8;
 
@@ -53,21 +78,29 @@ Modbus master(0, mySerial, DE_RE); // this is master and RS-485 via software ser
  */
 modbus_t telegram;
 
-unsigned long u32wait;
-
 void setup() {
+  
+  // Setup LCD
   lcd.init();
   lcd.clear();
   lcd.setCursor(0,0); lcd.print("Temp");
   lcd.setCursor(6,0); lcd.print("Humid");
   lcd.setCursor(12,0); lcd.print("Pres");
+  
   //Serial.begin(9600); // start terminal via usb
+
+  // Setup Modbus
   mySerial.begin(9600); // start software serial
   master.start(); // start the ModBus object
   master.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
   u32wait = millis() + 1000;
   u8state = 0;
   t = 0.0; h = 0.0; p = 0.0;
+  
+  // Setup RTC
+  Rtc.Begin();
+  
+  
 }
 
 void loop() {
@@ -109,4 +142,20 @@ void loop() {
     }
     break;
   }
+}
+
+void printDateTime(const RtcDateTime& dt)
+{
+    char datestring[20];
+
+    snprintf_P(datestring, 
+            countof(datestring),
+            PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
+            dt.Month(),
+            dt.Day(),
+            dt.Year(),
+            dt.Hour(),
+            dt.Minute(),
+            dt.Second() );
+    Serial.print(datestring);
 }

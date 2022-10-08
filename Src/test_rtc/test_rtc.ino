@@ -89,7 +89,7 @@ void loop ()
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
-void printDateTime(const RtcDateTime& dt)
+void printDateTime(const RtcDateTime& dt) 
 {
     char datestring[20];
 
