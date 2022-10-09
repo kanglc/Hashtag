@@ -48,6 +48,7 @@
  * 01 Sep 2022 RK330 temperature/humidity/pressure sensor working
  * 30 Sep 2022 DFR0464 LCD RGB Backlight Module working
  * 07 Oct 2022 DS1302 RTC Module working
+ * 09 Oct 2022 New platform working. Manual mode pins working
  * 
  */
 
@@ -61,16 +62,6 @@
 #include <ThreeWire.h>
 #include <RtcDS1302.h>
 
-const int RTC_CLK = 5;
-const int RTC_DAT = 7;
-const int RTC_RST = 2;
-
-ThreeWire myWire(RTC_DAT, RTC_CLK, RTC_RST); // IO, SCLK, CE
-RtcDS1302<ThreeWire> Rtc(myWire);
-
-// 16 characters and 2 lines of show
-DFRobot_RGBLCD1602 lcd(/*lcdCols*/16,/*lcdRows*/2);
-
 // Constants
 // data array for modbus network sharing
 uint16_t au16data[16];
@@ -82,6 +73,21 @@ const int rxPin = 9;
 const int txPin = 10;
 const int LCD_row1 = 0;
 const int LCD_row2 = 1;
+const int RTC_CLK = 5;
+const int RTC_DAT = 7;
+const int RTC_RST = 2;
+const int IN1 = 3;
+const int IN2 = 4;
+const int Relay_ON = 0;
+const int Relay_OFF = 1;
+const int Manual_Mode_pin = A2;
+const int Manual_ON_pin = A3;
+
+ThreeWire myWire(RTC_DAT, RTC_CLK, RTC_RST); // IO, SCLK, CE
+RtcDS1302<ThreeWire> Rtc(myWire);
+
+// 16 characters and 2 lines
+DFRobot_RGBLCD1602 lcd(16, 2); // lcdCols, lcdRows
 
 // Create a SoftwareSerial object so that we can use software serial.
 SoftwareSerial mySerial(rxPin, txPin);
@@ -101,13 +107,19 @@ Modbus master(0, mySerial, DE_RE); // this is master and RS-485 via software ser
 modbus_t telegram;
 
 void setup() {
-  
+
+  // Setup Relay
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  digitalWrite(IN1, Relay_OFF);
+  digitalWrite(IN2, Relay_OFF);
+  pinMode(Manual_Mode_pin, INPUT);
+  pinMode(Manual_ON_pin, INPUT);
+
   // Setup LCD
   lcd.init();
   lcd.clear();
-  //lcd.setCursor(0, LCD_row1); lcd.print("Temp");
-  //lcd.setCursor(6, LCD_row1); lcd.print("Humid");
-  //lcd.setCursor(12, LCD_row1); lcd.print("Pres");
+  lcd.setRGB(0, 0, 70);
   
   // Setup Serial Terminal
   Serial.begin(9600);
@@ -163,14 +175,14 @@ void setup() {
   u8state = 0;
   t = 0.0; h = 0.0; p = 0.0;
 
-}
+} // void setup
 
 void loop() {
 
   /**
   * State Machine for reading data from RK330-02
   */
-  switch( u8state ) {
+  switch(u8state) {
   case 0: 
     if (millis() > u32wait) u8state++; // wait state
     break;
@@ -240,15 +252,30 @@ void loop() {
       } else {
          lcd.setCursor(11, LCD_row1); lcd.print(now.Minute());
       }
+      lcd.setCursor(14, LCD_row1);
+      if (digitalRead(Manual_Mode_pin) == HIGH) {
+         lcd.print("M");
+         lcd.setCursor(15, LCD_row1);
+         if (digitalRead(Manual_ON_pin) == HIGH) {
+            lcd.print("1");
+            digitalWrite(IN1, Relay_ON); // temporary fix
+         } else {
+            lcd.print("0");
+            digitalWrite(IN1, Relay_OFF); // temporary fix
+         }
+      } else {
+         lcd.print("A");
+         lcd.setCursor(15, LCD_row1); lcd.print("");
+      }
 
       // Output LCD row2
       lcd.setCursor(0, LCD_row2); lcd.print("T:"); lcd.setCursor(2, LCD_row2); lcd.print(t);
       lcd.setCursor(8, LCD_row2); lcd.print("H:"); lcd.setCursor(10, LCD_row2); lcd.print(h);
-      //lcd.setCursor(12, LCD_row2); lcd.print(p);
     }
-    break;
-  }
-}
+    break; // from case 2
+  } // switch(u8state)
+
+} // void loop
 
 void printDateTime(const RtcDateTime& dt)
 {
