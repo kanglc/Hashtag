@@ -82,6 +82,9 @@ const int Relay_ON = 0;
 const int Relay_OFF = 1;
 const int Manual_Mode_pin = A2;
 const int Manual_ON_pin = A3;
+int Mode = 0;
+int ON_OFF = 0;
+int cooling = 1;
 
 ThreeWire myWire(RTC_DAT, RTC_CLK, RTC_RST); // IO, SCLK, CE
 RtcDS1302<ThreeWire> Rtc(myWire);
@@ -204,76 +207,124 @@ void loop() {
     if (master.getState() == COM_IDLE) {
       u8state = 0;
       u32wait = millis() + 2000;
-      t = au16data[0]/10.0;
+      //t = au16data[0]/10.0;
+      // Taking care of negative temperatures
+      if (au16data[0] > 32767) {
+         t = (au16data[0]-65536)/10.0;
+      } else {
+         t = au16data[0]/10.0;
+      }
       h = au16data[1]/10.0;
       p = au16data[2]/10.0;
 
-      // Get time from RTC
-      RtcDateTime now = Rtc.GetDateTime();
-      //printDateTime(now);
-      //Serial.println();
-
-      // Output to Serial Terminal
-      //Serial.print(now.Day()); Serial.print(now.Month()); Serial.print(now.Year()-2000); Serial.print(" ");
-      //Serial.print(now.Hour()); Serial.print(now.Minute()); Serial.print(":");
-      //Serial.print(" Temp:"); Serial.print(t);
-      //Serial.print(" Humid:"); Serial.print(h);
-      //Serial.print(" Pressure:"); Serial.print(p); Serial.println();
-
-      // Output Date and Time info to LCD row1 - is there a better way to do this???
-      if (now.Day() < 10) {
-         // Insert leading 0
-         lcd.setCursor(0, LCD_row1); lcd.print("0");
-         lcd.setCursor(1, LCD_row1); lcd.print(now.Day());
-      } else {
-         lcd.setCursor(0, LCD_row1); lcd.print(now.Day());
-      }
-      lcd.setCursor(2, LCD_row1); lcd.print("/");
-      if (now.Month() < 10) {
-         // Insert leading 0
-         lcd.setCursor(3, LCD_row1); lcd.print("0");
-         lcd.setCursor(4, LCD_row1); lcd.print(now.Month());
-      } else {
-         lcd.setCursor(3, LCD_row1); lcd.print(now.Month());
-      }
-      lcd.setCursor(5, LCD_row1); lcd.print("/");
-      lcd.setCursor(6, LCD_row1); lcd.print(now.Year()-2000);
-      if (now.Hour() < 10) {
-         // Insert leading 0
-         lcd.setCursor(9, LCD_row1); lcd.print("0");
-         lcd.setCursor(10, LCD_row1); lcd.print(now.Hour());
-      } else {
-         lcd.setCursor(9, LCD_row1); lcd.print(now.Hour());
-      }
-      if (now.Minute() < 10) {
-         // Insert leading 0
-         lcd.setCursor(11, LCD_row1); lcd.print("0");
-         lcd.setCursor(12, LCD_row1); lcd.print(now.Minute());
-      } else {
-         lcd.setCursor(11, LCD_row1); lcd.print(now.Minute());
-      }
-      lcd.setCursor(14, LCD_row1);
-      if (digitalRead(Manual_Mode_pin) == HIGH) {
-         lcd.print("M");
-         lcd.setCursor(15, LCD_row1);
-         if (digitalRead(Manual_ON_pin) == HIGH) {
-            lcd.print("1");
-            digitalWrite(IN1, Relay_ON); // temporary fix
-         } else {
-            lcd.print("0");
-            digitalWrite(IN1, Relay_OFF); // temporary fix
-         }
-      } else {
-         lcd.print("A");
-         lcd.setCursor(15, LCD_row1); lcd.print("");
-      }
-
-      // Output LCD row2
-      lcd.setCursor(0, LCD_row2); lcd.print("T:"); lcd.setCursor(2, LCD_row2); lcd.print(t);
-      lcd.setCursor(8, LCD_row2); lcd.print("H:"); lcd.setCursor(10, LCD_row2); lcd.print(h);
     }
     break; // from case 2
   } // switch(u8state)
+
+  /**
+  * Get time from RTC
+  */ 
+  RtcDateTime now = Rtc.GetDateTime();
+  //printDateTime(now);
+  //Serial.println();
+
+  /**
+  * Output to Serial Terminal
+  */ 
+  //Serial.print(now.Day()); Serial.print(now.Month()); Serial.print(now.Year()-2000); Serial.print(" ");
+  //Serial.print(now.Hour()); Serial.print(now.Minute()); Serial.print(":");
+  //Serial.print(" Temp:"); Serial.print(t);
+  //Serial.print(" Humid:"); Serial.print(h);
+  //Serial.print(" Pressure:"); Serial.print(p); Serial.println();
+
+  /**
+  * Read State of Mode and ON_OFF switches
+  */
+  Mode = digitalRead(Manual_Mode_pin);
+  ON_OFF = digitalRead(Manual_ON_pin);
+
+  /**
+  * Output to LCD
+  */ 
+  // Output Date and Time info to LCD row1 - is there a better way to do this???
+  if (now.Day() < 10) {
+     lcd.setCursor(0, LCD_row1); lcd.print("0"); // Insert leading 0
+     lcd.setCursor(1, LCD_row1); lcd.print(now.Day());
+  } else {
+     lcd.setCursor(0, LCD_row1); lcd.print(now.Day());
+  }
+  lcd.setCursor(2, LCD_row1); lcd.print("/");
+  if (now.Month() < 10) {
+     lcd.setCursor(3, LCD_row1); lcd.print("0"); // Insert leading 0
+     lcd.setCursor(4, LCD_row1); lcd.print(now.Month());
+  } else {
+     lcd.setCursor(3, LCD_row1); lcd.print(now.Month());
+  }
+  lcd.setCursor(5, LCD_row1); lcd.print("/");
+  lcd.setCursor(6, LCD_row1); lcd.print(now.Year()-2000);
+  if (now.Hour() < 10) {
+     lcd.setCursor(9, LCD_row1); lcd.print("0"); // Insert leading 0
+     lcd.setCursor(10, LCD_row1); lcd.print(now.Hour());
+  } else {
+     lcd.setCursor(9, LCD_row1); lcd.print(now.Hour());
+  }
+  if (now.Minute() < 10) {
+     lcd.setCursor(11, LCD_row1); lcd.print("0"); // Insert leading 0
+     lcd.setCursor(12, LCD_row1); lcd.print(now.Minute());
+  } else {
+     lcd.setCursor(11, LCD_row1); lcd.print(now.Minute());
+  }
+  lcd.setCursor(14, LCD_row1);
+  if (Mode == 1) {
+     lcd.print("M");
+     lcd.setCursor(15, LCD_row1);
+     if (ON_OFF == 1) {
+        lcd.print("1");
+     } else {
+        lcd.print("0");
+     }
+  } else {
+     lcd.print("A");
+     lcd.setCursor(15, LCD_row1); lcd.print(" ");
+  }
+  // Output LCD row2
+  //lcd.setCursor(0, LCD_row2); lcd.print("T:"); lcd.setCursor(2, LCD_row2); lcd.print(t);
+  //lcd.setCursor(8, LCD_row2); lcd.print("P:"); lcd.setCursor(10, LCD_row2); lcd.print(p);
+  lcd.setCursor(0, LCD_row2); lcd.print(t); lcd.setCursor(6, LCD_row2); lcd.print(",");
+  lcd.setCursor(7, LCD_row2); lcd.print(h); lcd.setCursor(12, LCD_row2); lcd.print(",");
+  lcd.setCursor(13, LCD_row2); lcd.print(p);
+
+
+  /**
+  * Output to Relay
+  */ 
+  if (Mode == 1) {
+
+     // Manual Mode
+     if (ON_OFF == 1) {
+        digitalWrite(IN1, Relay_ON);
+     } else {
+        digitalWrite(IN1, Relay_OFF);
+     }
+
+  } else {
+
+     // Auto Mode
+     if (cooling == 1) {
+        digitalWrite(IN1, Relay_ON);
+        if (t <= -25.0) {
+           digitalWrite(IN1, Relay_OFF);
+	   cooling = 0;
+        }
+     } else {
+        digitalWrite(IN1, Relay_OFF);
+        if (t >= -20.0) {
+           digitalWrite(IN1, Relay_ON);
+	   cooling = 1;
+        }
+     }
+
+  } // if (Mode == HIGH)
 
 } // void loop
 
