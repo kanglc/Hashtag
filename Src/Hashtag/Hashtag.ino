@@ -68,6 +68,7 @@ uint16_t au16data[16];
 uint8_t u8state;
 unsigned long u32wait;
 float t, h, p;
+int16_t t1;
 const int DE_RE = 8;
 const int rxPin = 9;
 const int txPin = 10;
@@ -176,7 +177,7 @@ void setup() {
   master.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
   u32wait = millis() + 1000;
   u8state = 0;
-  t = 0.0; h = 0.0; p = 0.0;
+  t = 0.0; h = 0.0; p = 0.0; t1 = 0;
 
 } // void setup
 
@@ -210,10 +211,11 @@ void loop() {
       //t = au16data[0]/10.0;
       // Taking care of negative temperatures
       if (au16data[0] > 32767) {
-         t = (au16data[0]-65536)/10.0;
+         t = (au16data[0]-65536.0)/10.0;
       } else {
          t = au16data[0]/10.0;
       }
+      t1 = (int16_t)au16data[0];
       h = au16data[1]/10.0;
       p = au16data[2]/10.0;
 
@@ -229,13 +231,20 @@ void loop() {
   //Serial.println();
 
   /**
-  * Output to Serial Terminal
+  * Output to Serial Terminal for debugging
   */ 
   //Serial.print(now.Day()); Serial.print(now.Month()); Serial.print(now.Year()-2000); Serial.print(" ");
   //Serial.print(now.Hour()); Serial.print(now.Minute()); Serial.print(":");
   //Serial.print(" Temp:"); Serial.print(t);
   //Serial.print(" Humid:"); Serial.print(h);
-  //Serial.print(" Pressure:"); Serial.print(p); Serial.println();
+  //Serial.print(" Pressure:"); Serial.println(p);
+  //Serial.print(au16data[0]); Serial.print(",");
+  //Serial.print(au16data[1]); Serial.print(",");
+  //Serial.print(au16data[2]); Serial.print(",");
+  //Serial.print(au16data[3]); Serial.print(",");
+  //Serial.print(au16data[4]); Serial.print(",");
+  //Serial.print(au16data[5]); Serial.print(",");
+  //Serial.println(t1);
 
   /**
   * Read State of Mode and ON_OFF switches
@@ -293,7 +302,6 @@ void loop() {
   lcd.setCursor(0, LCD_row2); lcd.print(t); lcd.setCursor(6, LCD_row2); lcd.print(",");
   lcd.setCursor(7, LCD_row2); lcd.print(h); lcd.setCursor(12, LCD_row2); lcd.print(",");
   lcd.setCursor(13, LCD_row2); lcd.print(p);
-
 
   /**
   * Output to Relay
