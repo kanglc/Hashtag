@@ -336,6 +336,7 @@ void loop() {
 
 } // void loop
 
+// Function used by RTC
 void printDateTime(const RtcDateTime& dt)
 {
     char datestring[20];
