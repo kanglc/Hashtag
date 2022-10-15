@@ -12,6 +12,7 @@
  * 7. DFR0464 LCD RGB Backlight Module
  * 8. DFR0229 microSD module
  * 9. Power Splitter
+ * 10. DHT22 temperature and humidity sensor
  *
  * Software (libraries):
  * 1. Modbus-Master-Slave-for-Arduino-master
@@ -26,6 +27,7 @@
  * 5. ThreeWire
  * 6. SD
  * 7. SPI
+ * 8. DHT
  *
  * Modbus Connections:
  * Max485 RE - Uno pin 8
@@ -49,6 +51,7 @@
  * 30 Sep 2022 DFR0464 LCD RGB Backlight Module working
  * 07 Oct 2022 DS1302 RTC Module working
  * 09 Oct 2022 New platform working. Manual mode pins working
+ * 14 Oct 2022 DHT22 temperature and humidity sensor working
  * 
  */
 
