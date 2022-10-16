@@ -85,7 +85,7 @@
 //uint16_t au16data[16];
 //uint8_t u8state;
 //unsigned long u32wait;
-uint8_t current_millis;
+unsigned long current_millis;
 float t, h, p;
 int16_t t1;
 const int DE_RE = 8;
