@@ -80,7 +80,7 @@
 #define RTC_DAT 7
 #define RTC_RST 2
 
-// Constants
+// Constants and Variables
 // data array for modbus network sharing
 //uint16_t au16data[16];
 //uint8_t u8state;

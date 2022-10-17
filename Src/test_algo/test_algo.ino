@@ -31,10 +31,10 @@
 #define t_25_OFF 20
 
 // Constants
-unsigned long current_millis;
-unsigned long seconds_millis;
 
 // Variables
+unsigned long current_millis;
+unsigned long seconds_millis;
 float t, h, p;
 uint8_t Mode = 0;
 uint8_t Manual_ON_OFF = 0;
