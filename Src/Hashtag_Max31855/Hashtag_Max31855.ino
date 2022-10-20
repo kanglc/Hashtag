@@ -69,11 +69,11 @@
 // MOSI - pin 11
 // MISO - pin 12
 // CLK - pin 13
-// CS - pin 6 
+// CS/SS - pin 6 
 #define SD_CS 6
 // Relay
-#define IN1 3
-#define IN2 4
+#define IN1 A0
+#define IN2 A1
 #define Manual_Mode_pin A2
 #define Manual_ON_pin A3
 #define Relay_ON 0
@@ -102,10 +102,12 @@
 // LCD
 #define LCD_row1 0
 #define LCD_row2 1
+// MicroSD
+#define loginterval 1000
 
 // Constants and Variables
-//unsigned long current_millis;
-//unsigned long seconds_millis;
+unsigned long current_millis;
+unsigned long seconds_millis;
 unsigned long lastMillis;
 float t, h, p;
 bool Mode = false;
@@ -143,30 +145,29 @@ void setup() {
   pinMode(Manual_ON_pin, INPUT);
 
   // Setup microSD
-  buffer.reserve(64);
-  if (!SD.begin(SD_CS)) {
-    Serial.println(F("initialization failed!"));
-    while (1);
-  }
-  Serial.println(F("initialization done."));
-  SD.remove("Hashtag.txt");
-  File myFile = SD.open("Hashtag.txt", FILE_WRITE);
-  if (myFile) {
-    Serial.print(F("Writing to text file ..."));
-    myFile.println("Hashtag data");
-    // close the file:
-    myFile.close();
-    Serial.println("Done");
-  } else {
-    // if the file didn't open, print an error:
-    Serial.println(F("error opening file"));
-    while (1);
-  }
+   buffer.reserve(64);
+   if (!SD.begin(SD_CS)) {
+     Serial.println(F("initialization failed!"));
+     while (1);
+   }
+   SD.remove("Hashtag.txt");
+   File myFile = SD.open("Hashtag.txt", FILE_WRITE);
+   if (myFile) {
+     Serial.print(F("Writing to text file ..."));
+     myFile.println("Hashtag data");
+     // close the file:
+     myFile.close();
+     Serial.println("Done");
+   } else {
+     // if the file didn't open, print an error:
+     Serial.println(F("error opening file"));
+     while (1);
+   }
 
   // Setup LCD
   lcd.init();
   lcd.clear();
-  lcd.setRGB(0, 0, 70);
+  lcd.setRGB(0, 0, 50);
   
   // Setup RTC
   Rtc.Begin();
@@ -222,8 +223,8 @@ void setup() {
   Serial.println(F("MAX31855 test DONE"));
 
   // Initialize variables
-  //unsigned long current_millis = millis();
-  //seconds_millis = millis();
+  unsigned long current_millis = millis();
+  seconds_millis = millis();
   lastMillis = millis();
   t = 0.0; h = 0.0; p = 0.0;
   cooling = true;
@@ -442,33 +443,33 @@ void loop() {
   /**
   * Write to microSD
   */
-  // check if it's been over 1000 ms since the last line added
-  unsigned long current_millis = millis();
-  if ((current_millis - lastMillis) >= 1000) {
-     buffer = now.Day();
-     buffer += "/";
-     buffer += now.Month();
-     buffer += "/";
-     buffer += now.Year()-2000;
-     buffer += " ";
-     buffer += now.Hour();
-     buffer += now.Minute();
-     buffer += " Temperature = ";
-     buffer += t;
-     buffer += " degC";
-     buffer += "\r\n";
-     Serial.println(F("Writing to file: "));
-     Serial.println(buffer.c_str());
-     File myFile = SD.open("Hashtag.txt", FILE_WRITE);
-     if (myFile) {
-       myFile.println(buffer.c_str());
-       myFile.close();
-       Serial.println(F("Written to file."));
-     } else {
-       Serial.println(F("Error opening file!"));
-     }
-     lastMillis = millis();
-  } // if ((current_millis - lastMillis) >= 1000)
+  // check if it's been over loginterval since the last line added
+   unsigned long current_millis = millis();
+   if ((current_millis - lastMillis) >= loginterval) {
+      buffer = now.Day();
+      buffer += "/";
+      buffer += now.Month();
+      buffer += "/";
+      buffer += now.Year()-2000;
+      buffer += " ";
+      buffer += now.Hour();
+      buffer += now.Minute();
+      buffer += " Temperature = ";
+      buffer += t;
+      buffer += " degC";
+      buffer += "\n";
+      Serial.print(F("Writing to file: "));
+      Serial.println(buffer.c_str());
+      File myFile = SD.open("Hashtag.txt", FILE_WRITE);
+      if (myFile) {
+        myFile.println(buffer.c_str());
+        myFile.close();
+        Serial.println(F("Written to file."));
+      } else {
+        Serial.println(F("Error opening file!"));
+      }
+      lastMillis = millis();
+   } // if ((current_millis - lastMillis) >= 1000)
 
 
 } // void loop
