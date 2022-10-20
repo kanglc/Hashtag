@@ -1,9 +1,10 @@
 DS1302
 ======
 
-This is the one use:
-
+This is the one used, by Makuna:
 https://electropeak.com/learn/interfacing-ds1302-real-time-clock-rtc-module-with-arduino/
+
+DS1302.zip is another library reported to be good.
 
 
 DS3231
