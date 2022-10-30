@@ -103,7 +103,7 @@
 #define LCD_row1 0
 #define LCD_row2 1
 // MicroSD
-#define loginterval 1000
+#define loginterval 60000
 
 // Constants and Variables
 unsigned long current_millis;
@@ -250,7 +250,7 @@ void loop() {
   * Get temperature from Max31855
   */
   t = thermocouple.readCelsius();
-  //delay(1000);
+  delay(1000);
   // no need to delay because the (RTC+LCD) codes below got more than 2 seconds of delay
   //Serial.print("Temperature: "); Serial.println(t);
 
