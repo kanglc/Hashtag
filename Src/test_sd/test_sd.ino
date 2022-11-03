@@ -18,7 +18,7 @@
 
 */
 
-#define CS 4
+#define CS 53
 
 #include <SPI.h>
 #include <SD.h>
@@ -99,4 +99,3 @@ void loop() {
   } // if ((now - lastMillis) >= 5000)
 
 } // void loop(
-

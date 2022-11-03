@@ -18,9 +18,9 @@
 // Definitions
 // RTC
 #define countof(a) (sizeof(a) / sizeof(a[0]))
-#define RTC_CLK 16
-#define RTC_DAT 15
-#define RTC_RST 14
+#define RTC_CLK 2
+#define RTC_DAT 3
+#define RTC_RST 4
 // Max31865
 #define MAXCLK    8
 #define MAXDO     9
@@ -43,10 +43,10 @@
 #define t_upper -21
 #define t_lower -23
 // SD
-#define SD_MOSI 51
+//#define SD_MOSI 51
 #define SD_SS   53
-#define SD_SCK  52
-#define SD_MISO 50
+//#define SD_SCK  52
+//#define SD_MISO 50
 #define loginterval 60000
 
 // Constants and Variables
@@ -59,8 +59,9 @@ float t;
 bool cooling = true;
 unsigned long current_millis;
 unsigned long last_millis;
-String buffer;
+String sbuffer;
 File myFile;
+//char filename[];
 
 // Used by RTC
 void printDateTime(const RtcDateTime& dt)
@@ -172,22 +173,29 @@ void setup() {
   digitalWrite(LED_G_pin, LED_G);
 
   // Setup microSD
-//  buffer.reserve(128);
-//  if (!SD.begin(SD_SS)) {
-//    Serial.println(F("microSD initialization failed!"));
-//    while (1);
-//  }
-//  SD.remove("Hashtag.txt");
-//  myFile = SD.open("Hashtag.txt", FILE_WRITE);
-//  if (myFile) {
-//    Serial.print(F("Writing to text file ..."));
-//    myFile.println("Hashtag data");
-//    Serial.println("Done");
-//    myFile.close();
-//  } else {
-//    Serial.println(F("error opening file"));
-//    while (1);
-//  }
+  sbuffer.reserve(128);
+  if (!SD.begin(SD_SS)) {
+    Serial.println(F("microSD initialization failed!"));
+    while (1);
+  }
+  Serial.println("microSD initialization done");
+  //SD.remove("Hashtag.txt");
+  //filename = "Hashtag_";
+  //filename += now.Day();
+  //filename += now.Month();
+  //filename += now.Year();
+  //filename += ".txt";
+  //Serial.print("filename :"); Serial.println(filename);
+  myFile = SD.open("Hashtag.csv", FILE_WRITE);
+  if (myFile) {
+    Serial.print(F("Writing to text file ..."));
+    myFile.println("Hashtag data");
+    Serial.println("Writing done");
+    myFile.close();
+  } else {
+    Serial.println(F("error opening file"));
+    while (1);
+  }
 
 
 } // void setup
@@ -210,6 +218,8 @@ void loop() {
   * Get temperature from Max31865
   */
   t = thermo.temperature(RNOMINAL, RREF);
+
+  // Use green led to indicate negative temperature
   if (t < 0) {
     LED_G = true;
   } else {
@@ -221,7 +231,7 @@ void loop() {
   * Display temperature on display and serial terminal
   */
   LED.print(abs(round(t*100)/100.00));
-  //delay(1000);
+  delay(500);
   Serial.print(now.Day()); Serial.print(now.Month()); Serial.print(now.Year()-2000); Serial.print(" ");
   Serial.print(now.Hour()); Serial.print(now.Minute()); Serial.print(":");
   Serial.print(" Temp = "); Serial.println(t);
@@ -268,33 +278,33 @@ void loop() {
   * Write to microSD
   */
   // check if it's been over loginterval since the last line added
-//  current_millis = millis();
-//  if ((current_millis - last_millis) >= loginterval) {
-//     buffer = now.Day();
-//     buffer += "/";
-//     buffer += now.Month();
-//     buffer += "/";
-//     buffer += now.Year()-2000;
-//     buffer += " ";
-//     buffer += now.Hour();
-//     buffer += now.Minute();
-//     buffer += " Temperature = ";
-//     buffer += t;
-//     buffer += " degC";
-//     buffer += "\r\n";
-//     myFile = SD.open("Hashtag.txt", FILE_WRITE);
-//     Serial.print(F("Writing to file: "));
-//     Serial.println(buffer.c_str());
-//     if (myFile) {
-//       myFile.println(buffer.c_str());
-//       Serial.println(F("Written to file."));
-//       myFile.close();
-//     } else {
-//       Serial.println(F("Error opening file!"));
-//     }
-//     last_millis = millis();
-//     Serial.print("last_millis = "); Serial.println(last_millis);
-//  } // if ((current_millis - last_millis) >= loginterval)
+  current_millis = millis();
+  if ((current_millis - last_millis) >= loginterval) {
+     sbuffer = now.Day();
+     sbuffer += "/";
+     sbuffer += now.Month();
+     sbuffer += "/";
+     sbuffer += now.Year()-2000;
+     sbuffer += " ";
+     sbuffer += now.Hour();
+     sbuffer += now.Minute();
+     sbuffer += ",Temperature = ";
+     sbuffer += t;
+     sbuffer += " degC";
+     sbuffer += "\r\n";
+     myFile = SD.open("Hashtag.csv", FILE_WRITE);
+     Serial.print(F("Writing to file: "));
+     Serial.println(sbuffer.c_str());
+     if (myFile) {
+       myFile.println(sbuffer.c_str());
+       myFile.close();
+       Serial.println(F("Written to file."));
+     } else {
+       Serial.println(F("Error opening file!"));
+     }
+     last_millis = millis();
+     //Serial.print("last_millis = "); Serial.println(last_millis);
+  } // if ((current_millis - last_millis) >= loginterval)
 
 
 } // void loop
