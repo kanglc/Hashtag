@@ -1,29 +1,29 @@
 /*
- * test rk330 t-h-p sensor via max485 module
+ * test rk330 THP sensor via max485 module
+ * Modbus Connections:
+ * Max485 RE - Uno pin 8 (DE_RE)
+ * Max485 DE - Uno pin 8 (DE_RE)
+ * Max485 RO - Uno pin 9 (rxPin)
+ * Max485 DI - Uno pin 10 (txPin)
+ * Max485 Vcc - +5V
+ * Max485 Gnd - Ground
+ * Max485 A - RK330-02 A (yellow)
+ * Max485 B - RK330-02 B (green)
+ *
+ * Library: Modbus-Master-Slave-for-Arduino-master
+ * example: software_serial_simple_master.ino
  *
  */
 
 // Definitions
-#define countof(a) (sizeof(a) / sizeof(a[0]))
+#define DE_RE 8
+//#define rxPin 15
+//#define txPin 14
+
 
 // Libraries
 #include <ModbusRtu.h>
-#include <SoftwareSerial.h>
-#include "DFRobot_RGBLCD1602.h"
-#include <ThreeWire.h>  
-#include <RtcDS1302.h>
-
-// DS1302 CONNECTIONS:
-// DS1302 CLK/SCLK --> 5
-// DS1302 DAT/IO --> 7
-// DS1302 RST/CE --> 2
-// DS1302 VCC --> 3.3v - 5v
-// DS1302 GND --> GND
-ThreeWire myWire(7,5,2); // IO, SCLK, CE
-RtcDS1302<ThreeWire> Rtc(myWire);
-
-//16 characters and 2 lines of show
-DFRobot_RGBLCD1602 lcd(/*lcdCols*/16,/*lcdRows*/2);
+#include "DFRobot_LedDisplayModule.h"
 
 // Constants
 // data array for modbus network sharing
@@ -31,10 +31,7 @@ uint16_t au16data[16];
 uint8_t u8state;
 unsigned long u32wait;
 float t, h, p;
-const int DE_RE = 8;
-
-//Create a SoftwareSerial object so that we can use software serial. Search "software serial" on Arduino.cc to find out more details.
-SoftwareSerial mySerial(9, 10);
+String dstr;
 
 /**
  *  Modbus object declaration
@@ -43,44 +40,51 @@ SoftwareSerial mySerial(9, 10);
  *  u8txenpin : 0 for RS-232 and USB-FTDI 
  *               or any pin number > 1 for RS-485
  */
-Modbus master(0, mySerial, DE_RE); // this is master and RS-485 via software serial
+Modbus master(0, Serial3, DE_RE); // this is master and RS-485 via software serial
 
 /**
  * This structure contains a query to an slave device
  */
 modbus_t telegram;
 
+/**
+ * DFRobot_LedDisplayModule Constructor
+ * In default, the IIC address of 4 bits digital tube is 0x48 
+ */
+DFRobot_LedDisplayModule LED(&Wire, 0x48);
+
+
 void setup() {
   
-  // Setup LCD
-  lcd.init();
-  lcd.clear();
-  lcd.setCursor(0,0); lcd.print("Temp");
-  lcd.setCursor(6,0); lcd.print("Humid");
-  lcd.setCursor(12,0); lcd.print("Pres");
-  
-  //Serial.begin(9600); // start terminal via usb
+  // Setup Serial Terminal for debug
+  Serial.begin(9600);
 
   // Setup Modbus
-  mySerial.begin(9600); // start software serial
+  Serial3.begin(9600); // hardware serial
   master.start(); // start the ModBus object
-  master.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
+  master.setTimeOut(2000); // if there is no answer in 2000 ms, roll over
   u32wait = millis() + 1000;
   u8state = 0;
   t = 0.0; h = 0.0; p = 0.0;
+
+  // Setup LED
+  while(LED.begin(LED.e4Bit) != 0)
+  {
+    Serial.println("Failed to initialize the chip , please confirm the chip connection!");
+    delay(1000);
+  }
+  LED.setDisplayArea(1,2,3,4);
+
   
-  // Setup RTC
-  Rtc.Begin();
-  
-  
-}
+} // void setup()
+
 
 void loop() {
 
   /**
   * State Machine for reading data from RK330-02
   */
-  switch( u8state ) {
+  switch (u8state) {
   case 0: 
     if (millis() > u32wait) u8state++; // wait state
     break;
@@ -94,7 +98,7 @@ void loop() {
     telegram.u16CoilsNo = 3; // number of elements (coils or registers) to read
     telegram.au16reg = au16data; // pointer to a memory array in the Arduino
 
-    master.query( telegram ); // send query (only once)
+    master.query(telegram); // send query (only once)
     u8state++;
     break;
   case 2:
@@ -102,32 +106,45 @@ void loop() {
     if (master.getState() == COM_IDLE) {
       u8state = 0;
       u32wait = millis() + 2000;
-        t = au16data[0]/10.0;
+        //t = au16data[0]/10.0;
+        // Taking care of negative temperatures
+        if (au16data[0] > 32767) {
+           t = (au16data[0]-65536.0)/10.0;
+        } else {
+           t = au16data[0]/10.0;
+        }
         h = au16data[1]/10.0;
         p = au16data[2]/10.0;
         //Serial.print("Temperature = "); Serial.print(t);
         //Serial.print(" degC, Humidity = "); Serial.print(h);
         //Serial.print(" %RH, Pressure = "); Serial.print(p); Serial.println(" kPa");
-        lcd.setCursor(0,1); lcd.print(t);
-        lcd.setCursor(6,1); lcd.print(h);
-        lcd.setCursor(12,1); lcd.print(p);
     }
     break;
-  }
-}
+  } // switch (u8state)
 
-void printDateTime(const RtcDateTime& dt)
-{
-    char datestring[20];
+  // Display on LED
+  dstr = t;
+  if (t >= 0) {
+    // positive
+    if (abs(t) < 10) {
+      // single positive
+      LED.print(" ", &dstr[0], &dstr[2], &dstr[3]);
+    } else {
+      // double positive
+      LED.print(" ", &dstr[0], &dstr[1], &dstr[3]);
+    }
+  } else {
+    // negative
+    if (abs(t) < 10) {
+      // single negative
+      LED.print("-", &dstr[1], &dstr[3], &dstr[4]);
+    } else {
+      // double negative
+      LED.print("-", &dstr[1], &dstr[2], &dstr[4]);
+    }
+  } // if (t >= 0)
+  delay(1000);
 
-    snprintf_P(datestring, 
-            countof(datestring),
-            PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
-            dt.Month(),
-            dt.Day(),
-            dt.Year(),
-            dt.Hour(),
-            dt.Minute(),
-            dt.Second() );
-    Serial.print(datestring);
-}
+
+} // void loop()
+
