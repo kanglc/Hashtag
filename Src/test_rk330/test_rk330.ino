@@ -1,34 +1,6 @@
-/**
- * For testing the temperature, humidity, and pressure sensor provided by Hastag
- * By Kang Liat Chuan.
- * 
- * Log:
- * RK330 temperature/humidity/pressure sensor working 1 Sep 2022
- * DFR0464 LCD RGB Backlight Module working 30 Sep 2022
- * DS1302 RTC Module working 7 Oct 2022
- * 
- * Hardware:
- * Arduino Uno, Max485-to-TTL module, RK330-02 sensor (from Hashtag)
- * PC running Arduino IDE - USB - Arduino Uno - Max485 - RK330-02
- * Uno pin 4 - Max485 RE
- * Uno pin 4 - Max485 DE
- * Uno pin 10 - Max485 RO
- * Uno pin 11 - Max485 DI
- * Max485 Vcc - +5V
- * Max485 Gnd - Ground
- * Max485 A - RK330-02 A (yellow)
- * Max485 B - RK330-02 B (green)
- * +12v and ground connected to Uno and RK330-02 via a splitter
- * DFR0464 LCD RGB Backlight Module
- * DS1302 RTC Module
+/*
+ * test rk330 t-h-p sensor via max485 module
  *
- * Software:
- * Modbus-Master-Slave-for-Arduino-master library (by smarmengol/Helium6072)
- * Modbus master example 2:
- * The purpose of this example is to query an array of data
- * from an external Modbus slave device.
- * This example is similar to "simple_master", but this example
- * allows you to use software serial instead of hardware serial
  */
 
 // Definitions
