@@ -16,22 +16,36 @@
  */
 
 // Definitions
+
+// Max485
 #define DE_RE 8
 //#define rxPin 15
 //#define txPin 14
+
+// RTC
+#define countof(a) (sizeof(a) / sizeof(a[0]))
+#define RTC_CLK 10
+#define RTC_DAT 11
+#define RTC_RST 12
 
 
 // Libraries
 #include <ModbusRtu.h>
 #include "DFRobot_LedDisplayModule.h"
+#include <ThreeWire.h>
+#include <RtcDS1302.h>
 
 // Constants
+
 // data array for modbus network sharing
 uint16_t au16data[16];
 uint8_t u8state;
 unsigned long u32wait;
 float t, h, p;
 String dstr;
+
+
+// Constructors
 
 /**
  *  Modbus object declaration
@@ -53,11 +67,53 @@ modbus_t telegram;
  */
 DFRobot_LedDisplayModule LED(&Wire, 0x48);
 
+// RTC
+ThreeWire myWire(RTC_DAT, RTC_CLK, RTC_RST); // IO, SCLK, CE
+RtcDS1302<ThreeWire> Rtc(myWire);
+
 
 void setup() {
   
   // Setup Serial Terminal for debug
   Serial.begin(9600);
+
+  // Setup RTC
+  Rtc.Begin();
+  RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
+  printDateTime(compiled);
+  if (!Rtc.IsDateTimeValid()) 
+  {
+      // Common Causes:
+      //    1) first time you ran and the device wasn't running yet
+      //    2) the battery on the device is low or even missing
+
+      Serial.println(F("RTC lost confidence in the DateTime!"));
+      Rtc.SetDateTime(compiled);
+  }
+  if (Rtc.GetIsWriteProtected())
+  {
+      Serial.println(F("RTC was write protected, enabling writing now"));
+      Rtc.SetIsWriteProtected(false);
+  }
+  if (!Rtc.GetIsRunning())
+  {
+      Serial.println(F("RTC was not actively running, starting now"));
+      Rtc.SetIsRunning(true);
+  }
+  RtcDateTime now = Rtc.GetDateTime();
+  if (now < compiled) 
+  {
+      Serial.println(F("RTC is older than compile time!  (Updating DateTime)"));
+      Rtc.SetDateTime(compiled);
+  }
+  else if (now > compiled) 
+  {
+      Serial.println(F("RTC is newer than compile time. (this is expected)"));
+  }
+  else if (now == compiled) 
+  {
+      Serial.println(F("RTC is the same as compile time! (not expected but all is fine)"));
+  }
 
   // Setup Modbus
   Serial3.begin(9600); // hardware serial
@@ -75,11 +131,17 @@ void setup() {
   }
   LED.setDisplayArea(1,2,3,4);
 
-  
+
+
 } // void setup()
 
 
 void loop() {
+
+  /**
+  * Get time from RTC
+  */ 
+  RtcDateTime now = Rtc.GetDateTime();
 
   /**
   * State Machine for reading data from RK330-02
@@ -115,9 +177,15 @@ void loop() {
         }
         h = au16data[1]/10.0;
         p = au16data[2]/10.0;
-        //Serial.print("Temperature = "); Serial.print(t);
-        //Serial.print(" degC, Humidity = "); Serial.print(h);
-        //Serial.print(" %RH, Pressure = "); Serial.print(p); Serial.println(" kPa");
+        Serial.print(now.Day()); Serial.print("/");
+	Serial.print(now.Month()); Serial.print("/");
+	Serial.print(now.Year()-2000); Serial.print(" ");
+        Serial.print(now.Hour()); Serial.print(":");
+	Serial.print(now.Minute()); Serial.print(" ");
+        Serial.print("Temp: "); Serial.print(t);
+        Serial.print(" deg, Humid: "); Serial.print(h);
+        Serial.print(" %RH, Press: "); Serial.print(p);
+        Serial.println(" kPa");
     }
     break;
   } // switch (u8state)
@@ -147,4 +215,22 @@ void loop() {
 
 
 } // void loop()
+
+
+// Used by RTC
+void printDateTime(const RtcDateTime& dt)
+{
+    char datestring[20];
+
+    snprintf_P(datestring, 
+            countof(datestring),
+            PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
+            dt.Month(),
+            dt.Day(),
+            dt.Year(),
+            dt.Hour(),
+            dt.Minute(),
+            dt.Second() );
+    Serial.print(datestring);
+}
 

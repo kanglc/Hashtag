@@ -16,11 +16,11 @@
 #include <SPI.h>
 
 // Definitions
-// RTC
+// RTC (for Mega, these pin numbers need to be >10)
 #define countof(a) (sizeof(a) / sizeof(a[0]))
-#define RTC_CLK 2
-#define RTC_DAT 3
-#define RTC_RST 4
+#define RTC_CLK 2 // 10
+#define RTC_DAT 3 // 11
+#define RTC_RST 4 // 12
 // Max31865
 #define MAXCLK    8
 #define MAXDO     9
@@ -56,12 +56,13 @@ bool LED_R = false;
 bool LED_Y = false;
 bool LED_G = false;
 float t;
+String dstr;
 bool cooling = true;
 unsigned long current_millis;
 unsigned long last_millis;
 String sbuffer;
 File myFile;
-//char filename[];
+char filename;
 
 // Used by RTC
 void printDateTime(const RtcDateTime& dt)
@@ -179,14 +180,13 @@ void setup() {
     while (1);
   }
   Serial.println("microSD initialization done");
-  //SD.remove("Hashtag.txt");
-  //filename = "Hashtag_";
-  //filename += now.Day();
-  //filename += now.Month();
-  //filename += now.Year();
-  //filename += ".txt";
-  //Serial.print("filename :"); Serial.println(filename);
-  myFile = SD.open("Hashtag.csv", FILE_WRITE);
+  filename = "Hashtag_";
+  filename += now.Day();
+  filename += now.Month();
+  filename += now.Year();
+  filename += ".csv";
+  Serial.print("filename :"); Serial.println(filename);
+  myFile = SD.open(&filename, FILE_WRITE);
   if (myFile) {
     Serial.print(F("Writing to text file ..."));
     myFile.println("Hashtag data");
@@ -220,17 +220,37 @@ void loop() {
   t = thermo.temperature(RNOMINAL, RREF);
 
   // Use green led to indicate negative temperature
-  if (t < 0) {
-    LED_G = true;
-  } else {
-    LED_G = false;
-  }
-  digitalWrite(LED_G_pin, LED_G);
+  //if (t < 0) {
+  //  LED_G = true;
+  //} else {
+  //  LED_G = false;
+  //}
+  //digitalWrite(LED_G_pin, LED_G);
 
   /**
-  * Display temperature on display and serial terminal
+  * Display temperature on LED and serial terminal
   */
-  LED.print(abs(round(t*100)/100.00));
+  //LED.print(abs(round(t*100)/100.00));
+  dstr = t;
+  if (t >= 0) {
+    // positive
+    if (abs(t) < 10) {
+      // single positive
+      LED.print(" ", &dstr[0], &dstr[2], &dstr[3]);
+    } else {
+      // double positive
+      LED.print(" ", &dstr[0], &dstr[1], &dstr[3]);
+    }
+  } else {
+    // negative
+    if (abs(t) < 10) {
+      // single negative
+      LED.print("-", &dstr[1], &dstr[3], &dstr[4]);
+    } else {
+      // double negative
+      LED.print("-", &dstr[1], &dstr[2], &dstr[4]);
+    }
+  } // if (t >= 0)
   delay(500);
   Serial.print(now.Day()); Serial.print(now.Month()); Serial.print(now.Year()-2000); Serial.print(" ");
   Serial.print(now.Hour()); Serial.print(now.Minute()); Serial.print(":");
@@ -292,7 +312,7 @@ void loop() {
      sbuffer += t;
      sbuffer += " degC";
      sbuffer += "\r\n";
-     myFile = SD.open("Hashtag.csv", FILE_WRITE);
+     myFile = SD.open(&filename, FILE_WRITE);
      Serial.print(F("Writing to file: "));
      Serial.println(sbuffer.c_str());
      if (myFile) {
