@@ -1,0 +1,8 @@
+Gravity: 4-Digital LED Segment Display Module (Red)
+wiki: https://wiki.dfrobot.com/4-Digital%20LED%20Segment%20Display%20Module%20%20SKU:%20DFR0645-G_DFR0645-R#target_2
+
+Note that there are 2 variants - 4-digit and 8-digit modules.
+Make sure to set/use the correct codes/settings for the module.
+
+for RTC: 0x48
+

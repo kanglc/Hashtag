@@ -1,6 +1,5 @@
 DS1302
 ======
-
 This is the one used, by Makuna:
 https://electropeak.com/learn/interfacing-ds1302-real-time-clock-rtc-module-with-arduino/
 
@@ -9,11 +8,15 @@ DS1302.zip is another library reported to be good.
 
 DS3231
 ======
+https://lastminuteengineers.com/ds3231-rtc-arduino-tutorial/
+
 https://create.arduino.cc/projecthub/MisterBotBreak/how-to-use-a-real-time-clock-module-ds3231-bc90fe
 
 http://gilles.thebault.free.fr/spip.php?article53
 
 https://github.com/rodan/ds3231
 
-I2C Address = 0x68
+Default I2C Address
+for RTC: 0x68
+for EEprom: 0x57
 
