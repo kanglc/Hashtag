@@ -17,23 +17,27 @@
 
 // Definitions
 
-// Max485
-#define DE_RE 8
+// Max485 (use Serial3 of Mega)
+#define DE_RE 2
 //#define rxPin 15
 //#define txPin 14
 
 // RTC
 #define countof(a) (sizeof(a) / sizeof(a[0]))
-#define RTC_CLK 10
-#define RTC_DAT 11
-#define RTC_RST 12
+#define RTC_CLK 3
+#define RTC_DAT 4
+#define RTC_RST 5
 
+//TM1637
+#define TM1637_CLK 6
+#define TM1637_DIO 7
 
 // Libraries
 #include <ModbusRtu.h>
 #include "DFRobot_LedDisplayModule.h"
 #include <ThreeWire.h>
 #include <RtcDS1302.h>
+#include <TM1637Display.h>
 
 // Constants
 
@@ -43,7 +47,6 @@ uint8_t u8state;
 unsigned long u32wait;
 float t, h, p;
 String dstr;
-
 
 // Constructors
 
@@ -71,6 +74,9 @@ DFRobot_LedDisplayModule LED(&Wire, 0x48);
 ThreeWire myWire(RTC_DAT, RTC_CLK, RTC_RST); // IO, SCLK, CE
 RtcDS1302<ThreeWire> Rtc(myWire);
 
+// TM1637 LED
+TM1637Display display(TM1637_CLK, TM1637_DIO);
+
 
 void setup() {
   
@@ -80,6 +86,8 @@ void setup() {
   // Setup RTC
   Rtc.Begin();
   RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
+  Serial.print("Compiled Date, Time: ");
+  Serial.print(__DATE__); Serial.print(" "); Serial.println(__TIME__);
   printDateTime(compiled);
   if (!Rtc.IsDateTimeValid()) 
   {
@@ -123,7 +131,7 @@ void setup() {
   u8state = 0;
   t = 0.0; h = 0.0; p = 0.0;
 
-  // Setup LED
+  // Setup Gravity LED
   while(LED.begin(LED.e4Bit) != 0)
   {
     Serial.println("Failed to initialize the chip , please confirm the chip connection!");
@@ -190,10 +198,9 @@ void loop() {
     break;
   } // switch (u8state)
 
-  // Display on LED
+  // Display on Gravity LED module
   dstr = t;
   if (t >= 0) {
-    // positive
     if (abs(t) < 10) {
       // single positive
       LED.print(" ", &dstr[0], &dstr[2], &dstr[3]);
@@ -202,7 +209,6 @@ void loop() {
       LED.print(" ", &dstr[0], &dstr[1], &dstr[3]);
     }
   } else {
-    // negative
     if (abs(t) < 10) {
       // single negative
       LED.print("-", &dstr[1], &dstr[3], &dstr[4]);
@@ -211,6 +217,12 @@ void loop() {
       LED.print("-", &dstr[1], &dstr[2], &dstr[4]);
     }
   } // if (t >= 0)
+  //delay(1000);
+
+  // Display humidity on TM1637 LED
+  display.setBrightness(0x0f);
+  display.clear();
+  display.showNumberDec(h);
   delay(1000);
 
 
@@ -225,8 +237,8 @@ void printDateTime(const RtcDateTime& dt)
     snprintf_P(datestring, 
             countof(datestring),
             PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
-            dt.Month(),
             dt.Day(),
+            dt.Month(),
             dt.Year(),
             dt.Hour(),
             dt.Minute(),

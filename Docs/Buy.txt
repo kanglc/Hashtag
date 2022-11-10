@@ -1,3 +1,16 @@
+8 Nov 2022
+==========
+1. microSD card 4GB? Qty:4
+2. Max485 module Qty:8
+3. Max31865 amplifier Qty:4
+4. PT100 probe Qty:4
+5. Gravity LED module. Qty:2
+6. Dupont crimp terminals
+7. Terminal pin connectors 1way, 2-, 4-ways
+8. Wires: single core, yellow/purple
+9. 
+
+
 
 Sunlight
 
