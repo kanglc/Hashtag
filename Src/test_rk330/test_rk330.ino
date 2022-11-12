@@ -1,5 +1,5 @@
 /*
- * test rk330 THP sensor via max485 module
+ * Arduino Mega with rk330 sensor via max485 module
  * Modbus Connections:
  * Max485 RE - Uno pin 8 (DE_RE)
  * Max485 DE - Uno pin 8 (DE_RE)
