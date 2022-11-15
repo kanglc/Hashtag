@@ -13,7 +13,7 @@
 
 // Definitions
 // Max485 (use Mega Serial3)
-#define DE_RE 8
+#define DE_RE 2
 //#define rxPin 15
 //#define txPin 14
 
@@ -22,17 +22,32 @@
 // data array for modbus network sharing
 uint16_t au16data[16];
 uint8_t u8state;
+uint8_t u8query;
 unsigned long u32wait;
 float t, h, p;
+unsigned long wait1min;
 
 
 // Constructors
 Modbus master(0, Serial3, DE_RE);
-modbus_t telegram;
-
+modbus_t telegram[2];
 
 
 void setup() {
+
+  // telegram 0: read registers
+  telegram[0].u8id = 1; // slave address
+  telegram[0].u8fct = 3; // function code (this one is registers read)
+  telegram[0].u16RegAdd = 0; // start address in slave
+  telegram[0].u16CoilsNo = 3; // number of elements (coils or registers) to read
+  telegram[0].au16reg = au16data; // pointer to a memory array in the Arduino
+
+  // telegram 1: write a single register
+  telegram[1].u8id = 1; // slave address
+  telegram[1].u8fct = 6; // function code (this one is write a single register)
+  telegram[1].u16RegAdd = 3; // start address in slave
+  telegram[1].u16CoilsNo = 1; // number of elements (coils or registers) to read
+  telegram[1].au16reg = au16data+3; // pointer to a memory array in the Arduino
 
   // Setup Serial Terminal
   Serial.begin(9600);
@@ -40,20 +55,21 @@ void setup() {
   // Setup Modbus
   Serial3.begin(9600);
   master.start(); // start the ModBus object
-  master.setTimeOut( 2000 ); // if there is no answer in 2000 ms, roll over
+  master.setTimeOut(5000); // if there is no answer in 2000 ms, roll over
   u32wait = millis() + 1000;
   u8state = 0;
+  u8query = 0;
 
   // Initialise variables
   t = 0.0; h = 0.0; p = 0.0;
-
+  au16data[3] = 0;
+  wait1min = millis();
 
 
 } // void setup
 
 
 void loop() {
-
 
   /**
   * State Machine for reading data from RK330
@@ -63,41 +79,40 @@ void loop() {
     if (millis() > u32wait) u8state++; // wait state
     break;
   case 1: 
-    /**
-    * Refer to RK330 datasheet for specifications
-    */
-    telegram.u8id = 1; // slave address
-    telegram.u8fct = 3; // function code (this one is registers read)
-    telegram.u16RegAdd = 0; // start address in slave
-    telegram.u16CoilsNo = 3; // number of elements (coils or registers) to read
-    telegram.au16reg = au16data; // pointer to a memory array in the Arduino
-
-    master.query(telegram); // send query (only once)
+    master.query(telegram[u8query]); // send query (only once)
     u8state++;
+    u8query++;
+    if (u8query > 1) u8query = 0;
     break;
   case 2:
     master.poll(); // check incoming messages
     if (master.getState() == COM_IDLE) {
       u8state = 0;
-      u32wait = millis() + 2000;
-        //t = au16data[0]/10.0;
-        // Taking care of negative temperatures
-        if (au16data[0] > 32767) {
-           t = (au16data[0]-65536.0)/10.0;
-        } else {
-           t = au16data[0]/10.0;
-        }
-        h = au16data[1]/10.0;
-        p = au16data[2]/10.0;
-        Serial.print("Temp: "); Serial.print(t);
-        Serial.print(" deg, Humid: "); Serial.print(h);
-        Serial.print(" %RH, Press: "); Serial.print(p);
-        Serial.println(" kPa");
+      u32wait = millis() + 1000;
     }
     break;
   } // switch (u8state)
 
+  // Take care of negative temperatures
+  // if (au16data[0] > 32767) {
+  //    t = (au16data[0]-65536.0)/10.0;
+  // } else {
+  //    t = au16data[0]/10.0;
+  // }
+  t = au16data[0]; // temp from Max31865
+  h = au16data[1]/10.0; // humidity from RK330
+  p = au16data[2]/10.0; // pressure from RK330
+  
+  // Transmit an increasing number to slave (Uno)
+  if ((millis() - wait1min) > 6000) {
+     au16data[3]++;
+     wait1min = millis();
+  }
 
+  Serial.print("t: "); Serial.print(t);
+  Serial.print(" deg, h: "); Serial.print(h);
+  Serial.print(" %RH, p: "); Serial.print(p);
+  Serial.print(" kPa, au16data[3]: "); Serial.println(au16data[3]);
 
 } // void loop
 

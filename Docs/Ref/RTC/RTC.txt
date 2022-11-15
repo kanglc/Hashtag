@@ -20,3 +20,4 @@ Default I2C Address
 for RTC: 0x68
 for EEprom: 0x57
 
+https://electropeak.com/learn/interfacing-ds3231-real-time-clock-rtc-module-with-arduino/
