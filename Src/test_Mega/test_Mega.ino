@@ -13,7 +13,7 @@
 
 // Definitions
 // Max485 (use Mega Serial3)
-#define DE_RE 2
+#define DE_RE 17
 //#define rxPin 15
 //#define txPin 14
 
@@ -29,7 +29,7 @@ unsigned long wait1min;
 
 
 // Constructors
-Modbus master(0, Serial3, DE_RE);
+Modbus master(0, Serial1, DE_RE);
 modbus_t telegram[2];
 
 
@@ -53,7 +53,7 @@ void setup() {
   Serial.begin(9600);
 
   // Setup Modbus
-  Serial3.begin(9600);
+  Serial1.begin(9600);
   master.start(); // start the ModBus object
   master.setTimeOut(5000); // if there is no answer in 2000 ms, roll over
   u32wait = millis() + 1000;

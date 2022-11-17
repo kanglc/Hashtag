@@ -30,6 +30,9 @@
 #define MAXCLK  4
 #define RREF      430.0
 #define RNOMINAL  100.0
+// Servo
+#define servo_close 0
+#define servo_open 90
 
 
 // Constants and Variables
@@ -40,6 +43,7 @@ uint8_t u8state;
 unsigned long u32wait;
 float t, h, p;
 uint16_t servo_val;
+uint16_t servo_val_last;
 
 // Constructors
 SoftwareSerial mySerial1(rxPin1, txPin1);
@@ -62,7 +66,9 @@ void setup() {
   // Serup Servo
   myservo.attach(A0);
   servo_val = 0;
-  delay(20);
+  servo_val_last = 0;
+  myservo.write(0);
+  delay(15);
 
   // Setup Modbus
   mySerial1.begin(9600); // start software serial
@@ -152,15 +158,24 @@ void loop() {
   // }
 
   // servo_val = map(au16data[3], 0, 65535, 0, 180);
-  if (au16data[3] == 0) {
-     servo_val = 0;
-  } else if (au16data[3] == 1) {
-     servo_val = 90;
-  } else if (au16data[3] == 2) {
-     servo_val = 180;
+  servo_val = au16data[3];
+
+  // Move servo only if needed
+  if ((servo_val == 0) && (servo_val_last == 1)) {
+     // closing
+     for (int i = servo_open; i > servo_close; i--) {
+        myservo.write(i);
+        delay(10);
+     }
+     servo_val_last = 0;
+  } else if ((servo_val == 1) && (servo_val_last == 0)) {
+     // opening
+     for (int i = servo_close; i < servo_open; i++) {
+        myservo.write(i);
+        delay(10);
+     }
+     servo_val_last = 1;
   }
-  myservo.write(servo_val);
-  delay(20);
 
 
 } // void loop
