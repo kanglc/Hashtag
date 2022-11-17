@@ -12,6 +12,7 @@
 #include <ModbusRtu.h>
 #include <SoftwareSerial.h>
 #include <Adafruit_MAX31865.h>
+#include <Servo.h>
 
 // Definitions
 // Max485_1
@@ -38,11 +39,13 @@ uint16_t au16data[16];
 uint8_t u8state;
 unsigned long u32wait;
 float t, h, p;
+uint16_t servo_val;
 
 // Constructors
 SoftwareSerial mySerial1(rxPin1, txPin1);
 Modbus master(0, mySerial1, DE_RE1);
 modbus_t telegram;
+Servo myservo;
 
 //SoftwareSerial mySerial2(rxPin2, txPin2);
 Modbus slave(1, Serial, DE_RE2);
@@ -55,6 +58,11 @@ void setup() {
 
   // Setup Serial Terminal
   Serial.begin(9600);
+
+  // Serup Servo
+  myservo.attach(A0);
+  servo_val = 0;
+  delay(20);
 
   // Setup Modbus
   mySerial1.begin(9600); // start software serial
@@ -135,11 +143,25 @@ void loop() {
 
   // Sent to and get data from master (mega)
   slave.poll(au16data, 16);
-  if ((au16data[3] % 2) == 1) {
-     digitalWrite(LED_BUILTIN, HIGH);
-  } else {
-     digitalWrite(LED_BUILTIN, LOW);
+
+  // Turn on the built-in LED depending on odd or even
+  // if ((au16data[3] % 2) == 1) {
+  //    digitalWrite(LED_BUILTIN, HIGH);
+  // } else {
+  //    digitalWrite(LED_BUILTIN, LOW);
+  // }
+
+  // servo_val = map(au16data[3], 0, 65535, 0, 180);
+  if (au16data[3] == 0) {
+     servo_val = 0;
+  } else if (au16data[3] == 1) {
+     servo_val = 90;
+  } else if (au16data[3] == 2) {
+     servo_val = 180;
   }
+  myservo.write(servo_val);
+  delay(20);
+
 
 } // void loop
 

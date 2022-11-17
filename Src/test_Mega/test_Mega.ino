@@ -104,9 +104,12 @@ void loop() {
   p = au16data[2]/10.0; // pressure from RK330
   
   // Transmit an increasing number to slave (Uno)
-  if ((millis() - wait1min) > 6000) {
-     au16data[3]++;
-     wait1min = millis();
+  // if ((millis() - wait1min) > 6000) {
+  //    au16data[3]++;
+  //    wait1min = millis();
+  // }
+  if (Serial.available()) {
+     au16data[3] = Serial.parseInt();
   }
 
   Serial.print("t: "); Serial.print(t);
