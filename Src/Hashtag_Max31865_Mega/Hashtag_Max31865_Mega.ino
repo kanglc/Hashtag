@@ -174,7 +174,7 @@ void setup() {
   digitalWrite(LED_G_pin, LED_G);
 
   // Setup microSD
-  sbuffer.reserve(128);
+  sbuffer.reserve(256);
   if (!SD.begin(SD_SS)) {
     Serial.println(F("microSD initialization failed!"));
     while (1);
@@ -186,10 +186,11 @@ void setup() {
   filename += now.Year();
   filename += ".csv";
   Serial.print("filename :"); Serial.println(filename);
-  myFile = SD.open(&filename, FILE_WRITE);
+  // myFile = SD.open(&filename, FILE_WRITE);
+  myFile = SD.open("Hashtag.csv", FILE_WRITE);
   if (myFile) {
     Serial.print(F("Writing to text file ..."));
-    myFile.println("Hashtag data");
+    myFile.println("Start Data Logging...");
     Serial.println("Writing done");
     myFile.close();
   } else {
@@ -305,14 +306,15 @@ void loop() {
      sbuffer += now.Month();
      sbuffer += "/";
      sbuffer += now.Year()-2000;
-     sbuffer += " ";
+     sbuffer += ", ";
      sbuffer += now.Hour();
      sbuffer += now.Minute();
-     sbuffer += ",Temperature = ";
+     sbuffer += ", Temperature = ,";
      sbuffer += t;
-     sbuffer += " degC";
+     sbuffer += ", degC";
      sbuffer += "\r\n";
-     myFile = SD.open(&filename, FILE_WRITE);
+     // myFile = SD.open(&filename, FILE_WRITE);
+     myFile = SD.open("Hashtag.csv", FILE_WRITE);
      Serial.print(F("Writing to file: "));
      Serial.println(sbuffer.c_str());
      if (myFile) {
