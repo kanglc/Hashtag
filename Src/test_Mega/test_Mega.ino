@@ -12,11 +12,8 @@
 
 
 // Definitions
-// Max485 (use Mega Serial3)
+// Max485
 #define DE_RE 17
-//#define rxPin 15
-//#define txPin 14
-
 
 // Constants and Variables
 // data array for modbus network sharing
@@ -99,15 +96,18 @@ void loop() {
   // } else {
   //    t = au16data[0]/10.0;
   // }
-  t = au16data[0]; // temp from Max31865
-  h = au16data[1]/10.0; // humidity from RK330
-  p = au16data[2]/10.0; // pressure from RK330
+  t = au16data[0]/100.0; // temp from Max31865
+  h = au16data[1]/100.0; // humidity from DHT22
+  // h = au16data[1]/10.0; // humidity from RK330
+  // p = au16data[2]/10.0; // pressure from RK330
   
-  // Transmit an increasing number to slave (Uno)
-  // if ((millis() - wait1min) > 6000) {
-  //    au16data[3]++;
-  //    wait1min = millis();
-  // }
+  // Transmit an increasing number to slave (testing)
+  //if ((millis() - wait1min) > 3000) {
+  //   au16data[3]++;
+  //   wait1min = millis();
+  //}
+
+  // Transmit 1/0 to turn on/off servo
   if (Serial.available()) {
      au16data[3] = Serial.parseInt();
   }
