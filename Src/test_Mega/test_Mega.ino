@@ -92,12 +92,12 @@ void loop() {
   } // switch (u8state)
 
   // Take care of negative temperatures
-  // if (au16data[0] > 32767) {
-  //    t = (au16data[0]-65536.0)/10.0;
-  // } else {
-  //    t = au16data[0]/10.0;
-  // }
-  t = au16data[0]/100.0; // temp from Max31865
+  if (au16data[0] > 32767) {
+     t = (au16data[0]-65536.0)/100.0;
+  } else {
+     t = au16data[0]/100.0;
+  }
+  // t = au16data[0]/100.0; // temp from Max31865
   h = au16data[1]/100.0; // humidity from DHT22
   // h = au16data[1]/10.0; // humidity from RK330
   // p = au16data[2]/10.0; // pressure from RK330

@@ -10,6 +10,7 @@
 #define DE_RE2 2
 //#define rxPin2 0
 //#define txPin2 1
+#define slave_addr 3
 
 /* Constants and Variables */
 
@@ -21,7 +22,7 @@ uint16_t servo_val;
 uint16_t servo_val_last;
 
 // Max485
-Modbus slave(4, Serial, DE_RE2);
+Modbus slave(slave_addr, Serial, DE_RE2);
 
 
 void setup() {
