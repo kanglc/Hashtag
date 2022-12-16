@@ -14,6 +14,7 @@
 // Definitions
 // Max485
 #define DE_RE 17
+#define slave_addr 3
 
 // Constants and Variables
 // data array for modbus network sharing
@@ -33,14 +34,14 @@ modbus_t telegram[2];
 void setup() {
 
   // telegram 0: read registers
-  telegram[0].u8id = 1; // slave address
+  telegram[0].u8id = slave_addr; // slave address
   telegram[0].u8fct = 3; // function code (this one is registers read)
   telegram[0].u16RegAdd = 0; // start address in slave
   telegram[0].u16CoilsNo = 3; // number of elements (coils or registers) to read
   telegram[0].au16reg = au16data; // pointer to a memory array in the Arduino
 
   // telegram 1: write a single register
-  telegram[1].u8id = 1; // slave address
+  telegram[1].u8id = slave_addr; // slave address
   telegram[1].u8fct = 6; // function code (this one is write a single register)
   telegram[1].u16RegAdd = 3; // start address in slave
   telegram[1].u16CoilsNo = 1; // number of elements (coils or registers) to read

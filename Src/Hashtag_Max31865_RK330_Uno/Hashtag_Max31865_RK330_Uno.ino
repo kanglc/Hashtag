@@ -31,8 +31,8 @@
 #define RREF      430.0
 #define RNOMINAL  100.0
 // Servo
-#define servo_close 0
-#define servo_open 90
+#define servo_close 5
+#define servo_open 85
 
 
 // Constants and Variables
@@ -44,6 +44,8 @@ unsigned long u32wait;
 float t, h, p;
 uint16_t servo_val;
 uint16_t servo_val_last;
+int8_t state = 0;
+
 
 // Constructors
 SoftwareSerial mySerial1(rxPin1, txPin1);
@@ -62,12 +64,13 @@ void setup() {
 
   // Setup Serial Terminal
   Serial.begin(9600);
+  slave.start();
 
   // Serup Servo
   myservo.attach(A0);
   servo_val = 0;
   servo_val_last = 0;
-  myservo.write(0);
+  myservo.write(5);
   delay(15);
 
   // Setup Modbus
@@ -76,7 +79,6 @@ void setup() {
   master.setTimeOut(5000); // if there is no answer in 2000 ms, roll over
   u32wait = millis() + 1000;
   u8state = 0;
-  slave.start();
 
   // Setup Max31865
   thermo.begin(MAX31865_3WIRE);  // set to 2WIRE or 4WIRE as necessary
@@ -84,7 +86,9 @@ void setup() {
   // Initialise variables
   t = 0.0; h = 0.0; p = 0.0;
 
-  pinMode(LED_BUILTIN, OUTPUT);
+  // Testing
+  //pinMode(LED_BUILTIN, OUTPUT);
+
 
 } // void setup
 
@@ -107,7 +111,7 @@ void loop() {
     telegram.u16RegAdd = 0; // start address in slave
     telegram.u16CoilsNo = 3; // number of elements (coils or registers) to read
     telegram.au16reg = au16data; // pointer to a memory array in the Arduino
-
+  
     master.query(telegram); // send query (only once)
     u8state++;
     break;
@@ -115,11 +119,11 @@ void loop() {
     master.poll(); // check incoming messages
     if (master.getState() == COM_IDLE) {
       u8state = 0;
-      u32wait = millis() + 2000;
+      u32wait = millis() + 1000;
     }
     break;
   } // switch (u8state)
-
+  
   // Take care of negative temperatures
   // if (au16data[0] > 32767) {
   //    t = (au16data[0]-65536.0)/10.0;
@@ -130,9 +134,13 @@ void loop() {
   // p = au16data[2]/10.0;
 
   /**
-  * Get temperature from Max31865
+  * Get temperature from Max31865 (only temp, humid and pressure from RK330)
   */
-  au16data[0] = thermo.temperature(RNOMINAL, RREF);
+  au16data[0] = thermo.temperature(RNOMINAL, RREF) * 100.0;
+  // Testing
+  //au16data[0] = 6804;
+  //au16data[1] = 140;
+  //au16data[2] = 881;
 
   /*
   *        ***  NOTE  ***
@@ -141,42 +149,43 @@ void loop() {
   * PORT IS USED FOR MODBUS SLAVE. OTHERWISE WILL
   * SEND ZEROS TO THE MASTER (MEGA).
   */
-  // Serial.print("t: "); Serial.print(t);
-  // Serial.print("au16data[0]: "); Serial.println(au16data[0]);
-  // Serial.print(" deg, h: "); Serial.print(h);
-  // Serial.print(" %RH, p: "); Serial.print(p);
-  // Serial.print(" kPa");
+// Serial.print("au16data[0]: "); Serial.print(au16data[0]);
+// Serial.print(", state: "); Serial.print(state);
+// Serial.print(", slave.getInCnt(): "); Serial.print(slave.getInCnt());
+// Serial.print(", slave.getOutCnt(): "); Serial.print(slave.getOutCnt());
+// Serial.print(", slave.getErrCnt(): "); Serial.print(slave.getErrCnt());
+// Serial.print(", au16data[3]: "); Serial.println(au16data[3]);
 
-  // Sent to and get data from master (mega)
-  slave.poll(au16data, 16);
 
-  // Turn on the built-in LED depending on odd or even
-  // if ((au16data[3] % 2) == 1) {
-  //    digitalWrite(LED_BUILTIN, HIGH);
-  // } else {
-  //    digitalWrite(LED_BUILTIN, LOW);
-  // }
-
-  // servo_val = map(au16data[3], 0, 65535, 0, 180);
-  servo_val = au16data[3];
+  // Turn on the built-in LED depending on odd or even (testing)
+// if ((au16data[3] % 2) == 1) {
+//    digitalWrite(LED_BUILTIN, HIGH);
+// } else {
+//    digitalWrite(LED_BUILTIN, LOW);
+// }
 
   // Move servo only if needed
+  servo_val = au16data[3];
   if ((servo_val == 0) && (servo_val_last == 1)) {
      // closing
-     for (int i = servo_open; i > servo_close; i--) {
+     //digitalWrite(LED_BUILTIN, LOW); // testing
+     for (int i = servo_open; i >= servo_close; i -= 5) {
         myservo.write(i);
         delay(10);
      }
      servo_val_last = 0;
   } else if ((servo_val == 1) && (servo_val_last == 0)) {
      // opening
-     for (int i = servo_close; i < servo_open; i++) {
+     //digitalWrite(LED_BUILTIN, HIGH); // testing
+     for (int i = servo_close; i <= servo_open; i += 5) {
         myservo.write(i);
         delay(10);
      }
      servo_val_last = 1;
   }
 
+  // Sent to and get data from master (mega)
+  //state = slave.poll(au16data, 16);
+  slave.poll(au16data, 16);
 
 } // void loop
-

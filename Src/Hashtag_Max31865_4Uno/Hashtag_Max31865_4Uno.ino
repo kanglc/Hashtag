@@ -61,7 +61,7 @@ DHT dht(DHTPIN, DHTTYPE);
 Servo myservo;
 
 // Max485
-Modbus slave(1, Serial, DE_RE2);
+Modbus slave(4, Serial, DE_RE2);
 
 // Max31865
 Adafruit_MAX31865 thermo = Adafruit_MAX31865(MAXCS, MAXDI, MAXDO, MAXCLK);
@@ -100,7 +100,7 @@ void setup() {
 void loop() {
 
   // Get temperature and humidity from DHT22
-  if ((millis() - current_millis) > 3000) {
+  if ((millis() - current_millis) > 2000) {
      if (isnan(t) || isnan(h)) {
         // Serial.println(F("Failed to read from DHT sensor!"));
         return;

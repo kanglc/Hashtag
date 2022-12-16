@@ -15,7 +15,7 @@ Home
 #include <ThreeWire.h>  
 #include <RtcDS1302.h>
 
-ThreeWire myWire(7,5,2); // IO, SCLK, CE
+ThreeWire myWire(7,5,3); // IO, SCLK, CE
 RtcDS1302<ThreeWire> Rtc(myWire);
 
 void setup () 
@@ -96,8 +96,8 @@ void printDateTime(const RtcDateTime& dt)
     snprintf_P(datestring, 
             countof(datestring),
             PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
-            dt.Month(),
             dt.Day(),
+            dt.Month(),
             dt.Year(),
             dt.Hour(),
             dt.Minute(),
