@@ -37,6 +37,7 @@
 #define servo_port A0
 #define servo_close 180
 #define servo_open 130
+#define servo_pin 12
 
 /* Constants and Variables */
 
@@ -70,10 +71,11 @@ Adafruit_MAX31865 thermo = Adafruit_MAX31865(MAXCS, MAXDI, MAXDO, MAXCLK);
 void setup() {
 
   // Setup Modbus. Note: using Serial for Modbus slave cannot use Serial.print
-  Serial.begin(9600);
+  Serial.begin(19200);
   slave.start();
 
   // Serup Servo
+  pinMode(servo_pin, INPUT);
   myservo.attach(servo_port);
   servo_val = 0;
   servo_val_last = 0;
@@ -141,7 +143,8 @@ void loop() {
 // }
 
   // Move servo only if needed
-  servo_val = au16data[3];
+  //servo_val = au16data[3];
+  servo_val = digitalRead(servo_pin);
   if ((servo_val == 0) && (servo_val_last == 1)) {
      // closing
      //digitalWrite(LED_BUILTIN, LOW); // testing
