@@ -49,6 +49,8 @@ unsigned long u32wait;
 float t, h, p;
 uint16_t servo_val;
 uint16_t servo_val_last;
+uint16_t servo_mode;
+unsigned long servo_millis;
 int8_t state = 0;
 unsigned long current_millis;
 
@@ -79,6 +81,7 @@ void setup() {
   myservo.attach(servo_port);
   servo_val = 0;
   servo_val_last = 0;
+  servo_mode = 0;
   myservo.write(servo_close);
   delay(10);
 
@@ -91,10 +94,10 @@ void setup() {
   // Initialise variables
   t = 0.0; h = 0.0; p = 0.0;
   current_millis = millis();
+  servo_millis = millis();
 
-  // Testing
+  // Test
   //pinMode(LED_BUILTIN, OUTPUT);
-
 
 } // void setup
 
@@ -112,7 +115,6 @@ void loop() {
         current_millis = millis();
      }
   }
-
 
   // Get temperature from Max31865
   // Multiply by 100 and transmit to master (mega) as 16bit integer
@@ -143,25 +145,60 @@ void loop() {
 // }
 
   // Move servo only if needed
-  //servo_val = au16data[3];
+  servo_mode = au16data[3];
   servo_val = digitalRead(servo_pin);
-  if ((servo_val == 0) && (servo_val_last == 1)) {
-     // closing
-     //digitalWrite(LED_BUILTIN, LOW); // testing
-     for (int i = servo_open; i <= servo_close; i += 4) {
-        myservo.write(i);
-        delay(10);
+
+
+  if (servo_mode == 1) {
+
+     // Auto close mode
+     // open on rising edge, auto close after 5 seconds
+
+     if ((servo_val == 1) && (servo_val_last == 0)) {
+	//digitalWrite(LED_BUILTIN, HIGH); // test
+	// open servo slowly
+	for (int i = servo_close; i >= servo_open; i -= 4) {
+	   myservo.write(i);
+	   delay(10);
+	}
+	servo_val_last = 1;
+	servo_millis = millis();
      }
-     servo_val_last = 0;
-  } else if ((servo_val == 1) && (servo_val_last == 0)) {
-     // opening
-     //digitalWrite(LED_BUILTIN, HIGH); // testing
-     for (int i = servo_close; i >= servo_open; i -= 4) {
-        myservo.write(i);
-        delay(10);
+     if (((millis() - servo_millis)>5000) && (servo_val_last == 1)) {
+	//digitalWrite(LED_BUILTIN, LOW); // test
+	// close servo slowly
+	for (int i = servo_open; i <= servo_close; i += 4) {
+	   myservo.write(i);
+	   delay(10);
+	}
+	servo_val_last = 0;
      }
-     servo_val_last = 1;
-  }
+
+  } else {
+
+     // Non auto close mode
+     // open on rising edge, close on falling edge
+
+     if ((servo_val == 1) && (servo_val_last == 0)) {
+	//digitalWrite(LED_BUILTIN, HIGH); // test
+	// open servo slowly
+	for (int i = servo_close; i >= servo_open; i -= 4) {
+	   myservo.write(i);
+	   delay(10);
+	}
+	servo_val_last = 1;
+     } else if ((servo_val == 0) && (servo_val_last == 1)) {
+	//digitalWrite(LED_BUILTIN, LOW); // test
+	// close servo slowly
+	for (int i = servo_open; i <= servo_close; i += 4) {
+	   myservo.write(i);
+	   delay(10);
+	}
+	servo_val_last = 0;
+     }
+
+  } // if (servo_mode == 0)
+
 
   // Sent to and get data from master mega
   //state = slave.poll(au16data, 16);
