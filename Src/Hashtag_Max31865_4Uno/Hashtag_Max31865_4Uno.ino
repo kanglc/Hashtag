@@ -36,8 +36,9 @@
 // Servo
 #define servo_port A0
 #define servo_close 180
-#define servo_open 130
-#define servo_pin 12
+#define servo_open 120
+#define servo_open_duration 5000
+//#define servo_pin 12
 
 /* Constants and Variables */
 
@@ -49,8 +50,8 @@ unsigned long u32wait;
 float t, h, p;
 uint16_t servo_val;
 uint16_t servo_val_last;
-uint16_t servo_mode;
 unsigned long servo_millis;
+uint16_t servo_opened;
 int8_t state = 0;
 unsigned long current_millis;
 
@@ -77,11 +78,11 @@ void setup() {
   slave.start();
 
   // Serup Servo
-  pinMode(servo_pin, INPUT);
+  //pinMode(servo_pin, INPUT);
   myservo.attach(servo_port);
   servo_val = 0;
   servo_val_last = 0;
-  servo_mode = 0;
+  servo_opened = 0;
   myservo.write(servo_close);
   delay(10);
 
@@ -145,59 +146,34 @@ void loop() {
 // }
 
   // Move servo only if needed
-  servo_mode = au16data[3];
-  servo_val = digitalRead(servo_pin);
+  //servo_val = digitalRead(servo_pin);
+  servo_val_last = servo_val;
+  servo_val = au16data[3];
 
+  // Auto close mode
+  // open on rising edge, auto close after 5 seconds
 
-  if (servo_mode == 1) {
-
-     // Auto close mode
-     // open on rising edge, auto close after 5 seconds
-
-     if ((servo_val == 1) && (servo_val_last == 0)) {
-	//digitalWrite(LED_BUILTIN, HIGH); // test
-	// open servo slowly
-	for (int i = servo_close; i >= servo_open; i -= 4) {
-	   myservo.write(i);
-	   delay(10);
-	}
-	servo_val_last = 1;
-	servo_millis = millis();
+  if ((servo_val == 1) && (servo_val_last == 0) && (servo_opened == 0)) {
+     //digitalWrite(LED_BUILTIN, HIGH); // test
+     // open servo slowly
+     for (int i = servo_close; i >= servo_open; i -= 4) {
+        myservo.write(i);
+        delay(10);
      }
-     if (((millis() - servo_millis)>5000) && (servo_val_last == 1)) {
-	//digitalWrite(LED_BUILTIN, LOW); // test
-	// close servo slowly
-	for (int i = servo_open; i <= servo_close; i += 4) {
-	   myservo.write(i);
-	   delay(10);
-	}
-	servo_val_last = 0;
+     //servo_val_last = 1;
+     servo_opened = 1;
+     servo_millis = millis();
+  }
+  if (((millis() - servo_millis)>servo_open_duration) && (servo_opened == 1)) {
+     //digitalWrite(LED_BUILTIN, LOW); // test
+     // close servo slowly
+     for (int i = servo_open; i <= servo_close; i += 4) {
+        myservo.write(i);
+        delay(10);
      }
-
-  } else {
-
-     // Non auto close mode
-     // open on rising edge, close on falling edge
-
-     if ((servo_val == 1) && (servo_val_last == 0)) {
-	//digitalWrite(LED_BUILTIN, HIGH); // test
-	// open servo slowly
-	for (int i = servo_close; i >= servo_open; i -= 4) {
-	   myservo.write(i);
-	   delay(10);
-	}
-	servo_val_last = 1;
-     } else if ((servo_val == 0) && (servo_val_last == 1)) {
-	//digitalWrite(LED_BUILTIN, LOW); // test
-	// close servo slowly
-	for (int i = servo_open; i <= servo_close; i += 4) {
-	   myservo.write(i);
-	   delay(10);
-	}
-	servo_val_last = 0;
-     }
-
-  } // if (servo_mode == 0)
+     //servo_val_last = 0;
+     servo_opened = 0;
+  }
 
 
   // Sent to and get data from master mega

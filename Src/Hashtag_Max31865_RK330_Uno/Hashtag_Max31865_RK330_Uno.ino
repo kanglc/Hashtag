@@ -31,9 +31,12 @@
 #define RREF      430.0
 #define RNOMINAL  100.0
 // Servo
-#define servo_close 5
-#define servo_open 85
-
+#define servo_port A0
+//#define servo_close 5
+//#define servo_open 85
+#define servo_close 180
+#define servo_open 120
+#define servo_open_duration 5000
 
 // Constants and Variables
 // data array for modbus network sharing
@@ -44,6 +47,8 @@ unsigned long u32wait;
 float t, h, p;
 uint16_t servo_val;
 uint16_t servo_val_last;
+unsigned long servo_millis;
+uint16_t servo_opened;
 int8_t state = 0;
 
 
@@ -67,10 +72,11 @@ void setup() {
   slave.start();
 
   // Serup Servo
-  myservo.attach(A0);
+  myservo.attach(servo_port);
   servo_val = 0;
   servo_val_last = 0;
-  myservo.write(5);
+  servo_opened = 0;
+  myservo.write(servo_close);
   delay(15);
 
   // Setup Modbus
@@ -86,8 +92,10 @@ void setup() {
   // Initialise variables
   t = 0.0; h = 0.0; p = 0.0;
 
+  servo_millis = millis();
+
   // Testing
-  //pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 
 
 } // void setup
@@ -165,23 +173,32 @@ void loop() {
 // }
 
   // Move servo only if needed
+  servo_val_last = servo_val;
   servo_val = au16data[3];
-  if ((servo_val == 0) && (servo_val_last == 1)) {
-     // closing
-     //digitalWrite(LED_BUILTIN, LOW); // testing
-     for (int i = servo_open; i >= servo_close; i -= 5) {
+
+  // Auto close mode
+  // open on rising edge, auto close after 5 seconds
+
+  if ((servo_val == 1) && (servo_val_last == 0) && (servo_opened == 0)) {
+     digitalWrite(LED_BUILTIN, HIGH); // test
+     // open servo slowly
+     for (int i = servo_close; i >= servo_open; i -= 4) {
         myservo.write(i);
         delay(10);
      }
-     servo_val_last = 0;
-  } else if ((servo_val == 1) && (servo_val_last == 0)) {
-     // opening
-     //digitalWrite(LED_BUILTIN, HIGH); // testing
-     for (int i = servo_close; i <= servo_open; i += 5) {
+     //servo_val_last = 1;
+     servo_opened = 1;
+     servo_millis = millis();
+  }
+  if (((millis() - servo_millis)>servo_open_duration) && (servo_opened == 1)) {
+     digitalWrite(LED_BUILTIN, LOW); // test
+     // close servo slowly
+     for (int i = servo_open; i <= servo_close; i += 4) {
         myservo.write(i);
         delay(10);
      }
-     servo_val_last = 1;
+     //servo_val_last = 0;
+     servo_opened = 0;
   }
 
   // Sent to and get data from master (mega)
